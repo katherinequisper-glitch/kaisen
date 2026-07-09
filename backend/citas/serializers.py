@@ -41,17 +41,18 @@ class DisponibilidadSerializer(serializers.ModelSerializer):
 
 
 class CitaSerializer(serializers.ModelSerializer):
-    servicio_nombre = serializers.CharField(source='servicio.nombre',       read_only=True)
-    es_presencial   = serializers.BooleanField(source='servicio.presencial', read_only=True)
-    tutor_nombre    = serializers.CharField(source='tutor.nombre',           read_only=True, default=None)
+    servicio_nombre  = serializers.CharField(source='servicio.nombre',       read_only=True)
+    servicio_precio  = serializers.DecimalField(source='servicio.precio',    max_digits=8, decimal_places=2, read_only=True)
+    es_presencial    = serializers.BooleanField(source='servicio.presencial', read_only=True)
+    tutor_nombre     = serializers.CharField(source='tutor.nombre',          read_only=True, default=None)
     disponibilidad_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model  = Cita
         fields = [
-            'id', 'usuario', 'servicio', 'servicio_nombre', 'es_presencial',
-            'tutor_nombre', 'disponibilidad_id', 'fecha', 'hora', 'estado',
-            'creado_en', 'expira_en',
+            'id', 'usuario', 'servicio', 'servicio_nombre', 'servicio_precio',
+            'es_presencial', 'tutor_nombre', 'disponibilidad_id',
+            'fecha', 'hora', 'estado', 'creado_en', 'expira_en',
         ]
         read_only_fields = ['usuario', 'servicio', 'fecha', 'hora', 'estado', 'creado_en', 'expira_en']
 

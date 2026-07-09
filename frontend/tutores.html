@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Elige tu tutor ideal en Kaisen Tutorías y reserva tu clase ahora.">
+  <title>Tutores — Kaisen Tutorías</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* ── Variables de página ── */
+    body { background: #f0f4ff; }
+
+    /* ── Band superior del curso ── */
+    .course-band {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--secondary) 100%);
+      padding: 2rem 0 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .course-band::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url('assets/images/tutoring_online.png') center/cover no-repeat;
+      opacity: .08;
+    }
+    .course-band-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: rgba(255,255,255,.8); font-size: .88rem; font-weight: 600;
+      text-decoration: none; margin-bottom: 1.2rem;
+      transition: color .2s;
+    }
+    .back-link:hover { color: white; }
+    .course-band h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800; color: white; margin-bottom: .6rem;
+    }
+    .course-meta-pills { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: rgba(255,255,255,.18); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.25);
+      color: white; font-size: .82rem; font-weight: 600;
+      padding: .3rem .9rem; border-radius: 50px;
+    }
+
+    /* ── Contenedor principal ── */
+    .page-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+    }
+
+    /* ── Títulos de sección ── */
+    .section-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+
+    /* ── GRID DE TUTORES ── */
+    .tutors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    /* ── Tarjeta de tutor ── */
+    .tutor-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .tutor-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 48px rgba(79,70,229,.18);
+      border-color: var(--primary);
+    }
+    .tutor-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(79,70,229,.12), 0 16px 48px rgba(79,70,229,.2);
+    }
+
+    /* Foto del tutor */
+    .tutor-photo-wrap {
+      position: relative;
+      height: 260px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    }
+    .tutor-photo {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      transition: transform .5s ease;
+    }
+    .tutor-card:hover .tutor-photo { transform: scale(1.05); }
+
+    .tutor-photo-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+    }
+
+    /* Overlay con nombre sobre la foto */
+    .tutor-photo-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(10,10,30,.82));
+      padding: 2rem 1.5rem 1.2rem;
+    }
+    .tutor-overlay-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem; font-weight: 800; color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,.4);
+    }
+    .tutor-overlay-badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: rgba(79,70,229,.85); color: white;
+      font-size: .72rem; font-weight: 700; padding: .2rem .7rem;
+      border-radius: 50px; margin-top: .3rem;
+    }
+
+    /* Cuerpo de la tarjeta */
+    .tutor-card-body { padding: 1.5rem; }
+
+    .tutor-estudios-row {
+      display: flex; align-items: flex-start; gap: .5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tutor-estudios-icon {
+      font-size: 1.3rem; flex-shrink: 0; margin-top: .05rem;
+    }
+    .tutor-estudios-text {
+      font-size: .85rem; font-weight: 600;
+      color: var(--primary-dark); line-height: 1.4;
+    }
+
+    .tutor-descripcion {
+      font-size: .88rem; color: var(--text-secondary);
+      line-height: 1.65; margin-bottom: 1rem;
+    }
+
+    .tutor-requisito {
+      display: flex; align-items: flex-start; gap: .5rem;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      padding: .7rem 1rem;
+      margin-bottom: 1.2rem;
+    }
+    .tutor-requisito-icon { font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+    .tutor-requisito-text { font-size: .82rem; color: #92400e; line-height: 1.4; }
+    .tutor-requisito-label {
+      font-weight: 700; display: block; margin-bottom: .15rem; color: #78350f;
+    }
+
+    .btn-elegir {
+      width: 100%; justify-content: center;
+      border-radius: var(--radius-lg);
+      padding: .85rem;
+      font-size: .95rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white; border: none; font-weight: 700;
+      display: flex; align-items: center; gap: .4rem;
+      cursor: pointer; transition: var(--transition);
+    }
+    .btn-elegir:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(79,70,229,.35);
+    }
+    .btn-elegir.selected-btn {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+    }
+
+    /* ── Panel de horarios ── */
+    .schedule-panel {
+      display: none;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      overflow: hidden;
+      margin-top: 2rem;
+      animation: fadeInUp .35s ease;
+    }
+    .schedule-panel.visible { display: block; }
+
+    .schedule-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 1.5rem 2rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .schedule-tutor-photo {
+      width: 56px; height: 56px; border-radius: 50%;
+      object-fit: cover; border: 3px solid rgba(255,255,255,.4);
+    }
+    .schedule-tutor-placeholder {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 800; color: white;
+      flex-shrink: 0;
+    }
+    .schedule-header-text h3 {
+      color: white; font-family: 'Poppins', sans-serif;
+      font-size: 1.05rem; font-weight: 700; margin-bottom: .2rem;
+    }
+    .schedule-header-text p {
+      color: rgba(255,255,255,.75); font-size: .82rem;
+    }
+
+    .schedule-body { padding: 1.5rem 2rem 2rem; }
+    .schedule-title {
+      font-weight: 700; font-size: .9rem;
+      color: var(--text-secondary); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 1rem;
+    }
+
+    .schedule-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: .75rem;
+    }
+    .slot-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 1.1rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: var(--transition);
+      background: var(--surface);
+    }
+    .slot-card:hover { border-color: var(--primary); background: white; }
+    .slot-info { display: flex; flex-direction: column; gap: .15rem; }
+    .slot-date { font-size: .85rem; font-weight: 700; color: var(--text-primary); }
+    .slot-time { font-size: .78rem; color: var(--text-muted); }
+    .btn-reserve {
+      background: var(--primary); color: white;
+      border: none; border-radius: var(--radius-sm);
+      padding: .45rem .9rem; font-size: .8rem; font-weight: 700;
+      cursor: pointer; transition: var(--transition); flex-shrink: 0;
+    }
+    .btn-reserve:hover { background: var(--primary-dark); transform: none; box-shadow: none; }
+
+    /* Empty / loading states */
+    .state-box {
+      text-align: center; padding: 3rem 2rem;
+      color: var(--text-secondary); font-size: .95rem;
+    }
+    .state-box .emoji { font-size: 3rem; display: block; margin-bottom: .8rem; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<header>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🎓</div>
+    Kaisen
+  </a>
+  <nav>
+    <a href="index.html#servicios">Tutorías</a>
+    <a href="dashboard.html" id="linkDashboard">Mis citas</a>
+    <a href="#" id="linkLogout" class="nav-btn-outline">Cerrar sesión</a>
+  </nav>
+</header>
+
+<!-- ══════════ BAND DEL CURSO ══════════ -->
+<div class="course-band">
+  <div class="course-band-inner">
+    <a href="index.html#servicios" class="back-link">← Volver al catálogo</a>
+    <h1 id="courseName">Cargando...</h1>
+    <div class="course-meta-pills" id="coursePills">
+      <span class="meta-pill">⏳ Cargando info...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CONTENIDO ══════════ -->
+<div class="page-container">
+
+  <!-- Tutores -->
+  <div id="panelTutores">
+    <div class="section-label">👨‍🏫 Elige tu tutor</div>
+    <div id="loadingTutores">
+      <div class="tutors-grid">
+        <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07)">
+          <div class="loading-skeleton" style="height:260px;border-radius:0"></div>
+          <div style="padding:1.5rem">
+            <div class="loading-skeleton" style="width:70%;margin-bottom:.8rem"></div>
+            <div class="loading-skeleton" style="width:90%;margin-bottom:.5rem"></div>
+            <div class="loading-skeleton" style="width:80%"></div>
+          </div>
+        </div>
+        <div style="background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07)">
+          <div class="loading-skeleton" style="height:260px;border-radius:0"></div>
+          <div style="padding:1.5rem">
+            <div class="loading-skeleton" style="width:60%;margin-bottom:.8rem"></div>
+            <div class="loading-skeleton" style="width:85%;margin-bottom:.5rem"></div>
+            <div class="loading-skeleton" style="width:75%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="listaTutores" class="tutors-grid" style="display:none"></div>
+    <div id="msgTutores"></div>
+  </div>
+
+  <!-- Panel de horarios (aparece al elegir tutor) -->
+  <div class="schedule-panel" id="schedulePanel">
+    <div class="schedule-header">
+      <div id="scheduleAvatarWrap"></div>
+      <div class="schedule-header-text">
+        <h3 id="scheduleTutorName">Tutor</h3>
+        <p id="scheduleTutorSub">Horarios disponibles para este curso</p>
+      </div>
+    </div>
+    <div class="schedule-body">
+      <div class="schedule-title">📅 Selecciona un horario</div>
+      <div id="scheduleSlots" class="schedule-slots"></div>
+      <div id="msgHorarios"></div>
+    </div>
+  </div>
+
+</div><!-- /page-container -->
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+  // Requiere auth
+  if (!estaLogueado()) {
+    const dest = encodeURIComponent(window.location.href.replace(window.location.origin + '/', ''));
+    window.location.href = `login.html?next=${dest}`;
+  }
+
+  document.getElementById('linkLogout').addEventListener('click', logout);
+
+  const TUTOR_IMGS = [
+    'assets/images/tutor_maria.png',
+    'assets/images/tutor_carlos.png',
+    'assets/images/tutor_ana.png',
+  ];
+
+  // Leer params de URL
+  const params     = new URLSearchParams(window.location.search);
+  const servicioId = params.get('servicio');
+  const nombre     = decodeURIComponent(params.get('nombre') || 'Curso');
+
+  // Si no hay servicio en URL, volver al catálogo
+  if (!servicioId) window.location.href = 'index.html#servicios';
+
+  let tutorActivo = null;
+
+  // Poner nombre del curso en el header
+  document.getElementById('courseName').textContent = nombre;
+  document.title = `Tutores — ${nombre} | Kaisen`;
+
+  // ── Cargar datos del servicio (precio, duración, etc.) ──
+  async function cargarServicio() {
+    try {
+      const resp    = await fetch(`${API_BASE}/servicios/${servicioId}/`);
+      const servicio = await resp.json();
+      const modo    = servicio.presencial ? '🌟 Presencial · Premium' : '🌐 Online';
+      document.getElementById('coursePills').innerHTML = `
+        <span class="meta-pill">${modo}</span>
+        <span class="meta-pill">⏱ ${servicio.duracion_minutos} min por sesión</span>
+        <span class="meta-pill">💰 S/ ${parseFloat(servicio.precio).toFixed(2)} por sesión</span>
+      `;
+
+      // Verificar que si es presencial, el usuario sea premium
+      if (servicio.presencial) {
+        const r = await fetchAuth(`${API_BASE}/perfil/`);
+        const p = await r.json();
+        if (!p.is_premium) {
+          document.getElementById('listaTutores').style.display = 'none';
+          document.getElementById('loadingTutores').style.display = 'none';
+          document.getElementById('msgTutores').innerHTML = `
+            <div class="alert alert-warning" style="margin-top:1rem">
+              <span class="alert-icon">⭐</span>
+              Este curso es <strong>presencial</strong> y requiere el <strong>Plan Premium</strong>.
+              Actívalo desde tu <a href="dashboard.html" style="color:var(--primary);font-weight:700">dashboard</a>.
+            </div>`;
+          return;
+        }
+      }
+    } catch { /* silencioso, solo para metadatos */ }
+
+    cargarTutores();
+  }
+
+  // ── Cargar tutores ──
+  async function cargarTutores() {
+    try {
+      const resp    = await fetch(`${API_BASE}/tutores/?servicio=${servicioId}`);
+      const tutores = await resp.json();
+
+      document.getElementById('loadingTutores').style.display = 'none';
+      document.getElementById('listaTutores').style.display   = 'grid';
+
+      if (!tutores.length) {
+        document.getElementById('listaTutores').style.display = 'none';
+        document.getElementById('msgTutores').innerHTML = `
+          <div class="state-box">
+            <span class="emoji">📭</span>
+            No hay tutores registrados para este curso aún.<br>
+            <a href="index.html#servicios" class="btn btn-primary" style="margin-top:1rem;display:inline-flex">
+              Ver otros cursos
+            </a>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('listaTutores').innerHTML = tutores.map((t, i) => {
+        const fotoSrc    = t.foto_src || TUTOR_IMGS[i % TUTOR_IMGS.length];
+        const fotoTag    = fotoSrc
+          ? `<img src="${fotoSrc}" class="tutor-photo" alt="${t.nombre}"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            + `<div class="tutor-photo-placeholder" style="display:none">${t.nombre[0]}</div>`
+          : `<div class="tutor-photo-placeholder">${t.nombre[0]}</div>`;
+
+        const reqHtml = t.requisitos ? `
+          <div class="tutor-requisito">
+            <span class="tutor-requisito-icon">📋</span>
+            <div class="tutor-requisito-text">
+              <span class="tutor-requisito-label">Requisito previo</span>
+              ${t.requisitos}
+            </div>
+          </div>` : '';
+
+        return `
+          <div class="tutor-card animate-fade-up" id="card-${t.id}"
+               style="animation-delay:${i * 0.1}s"
+               onclick="elegirTutor(${t.id}, '${t.nombre.replace(/'/g,"\\'")}', '${fotoSrc}')">
+
+            <div class="tutor-photo-wrap">
+              ${fotoTag}
+              <div class="tutor-photo-overlay">
+                <div class="tutor-overlay-name">${t.nombre}</div>
+                <div class="tutor-overlay-badge">✓ Tutor certificado</div>
+              </div>
+            </div>
+
+            <div class="tutor-card-body">
+              <div class="tutor-estudios-row">
+                <span class="tutor-estudios-icon">🎓</span>
+                <span class="tutor-estudios-text">${t.estudios}</span>
+              </div>
+              <p class="tutor-descripcion">${t.descripcion}</p>
+              ${reqHtml}
+              <button class="btn-elegir" id="btn-${t.id}">
+                👆 Elegir a ${t.nombre.split(' ')[0]} y ver horarios
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+    } catch {
+      document.getElementById('loadingTutores').style.display = 'none';
+      document.getElementById('msgTutores').innerHTML = `
+        <div class="alert alert-error">
+          <span class="alert-icon">❌</span> Error al cargar tutores. Intenta recargar la página.
+        </div>`;
+    }
+  }
+
+  // ── Elegir tutor → mostrar horarios ──
+  async function elegirTutor(tutorId, tutorNombre, fotoSrc) {
+    // Marcar selección visual
+    document.querySelectorAll('.tutor-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.btn-elegir').forEach(b => {
+      b.classList.remove('selected-btn');
+      b.textContent = `👆 Elegir y ver horarios`;
+    });
+    const card = document.getElementById(`card-${tutorId}`);
+    const btn  = document.getElementById(`btn-${tutorId}`);
+    card.classList.add('selected');
+    btn.classList.add('selected-btn');
+    btn.textContent = `✅ Seleccionado — ver horarios ↓`;
+
+    tutorActivo = tutorId;
+
+    // Mostrar panel
+    const panel = document.getElementById('schedulePanel');
+    panel.classList.add('visible');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Avatar en el header
+    const avatarWrap = document.getElementById('scheduleAvatarWrap');
+    if (fotoSrc) {
+      avatarWrap.innerHTML = `<img src="${fotoSrc}" class="schedule-tutor-photo" alt="${tutorNombre}"
+        onerror="this.outerHTML='<div class=\\'schedule-tutor-placeholder\\'>${tutorNombre[0]}</div>'">`;
+    } else {
+      avatarWrap.innerHTML = `<div class="schedule-tutor-placeholder">${tutorNombre[0]}</div>`;
+    }
+    document.getElementById('scheduleTutorName').textContent  = tutorNombre;
+    document.getElementById('scheduleTutorSub').textContent   = `Horarios disponibles · ${nombre}`;
+    document.getElementById('scheduleSlots').innerHTML =
+      '<div class="loading-skeleton" style="height:60px;border-radius:var(--radius-lg)"></div>' +
+      '<div class="loading-skeleton" style="height:60px;border-radius:var(--radius-lg)"></div>' +
+      '<div class="loading-skeleton" style="height:60px;border-radius:var(--radius-lg)"></div>';
+    document.getElementById('msgHorarios').innerHTML = '';
+
+    // Cargar horarios
+    try {
+      const resp     = await fetch(`${API_BASE}/disponibilidades/?servicio=${servicioId}&tutor=${tutorId}`);
+      const horarios = await resp.json();
+
+      if (!horarios.length) {
+        document.getElementById('scheduleSlots').innerHTML = '';
+        document.getElementById('msgHorarios').innerHTML = `
+          <div class="state-box">
+            <span class="emoji">😕</span>
+            ${tutorNombre.split(' ')[0]} no tiene horarios disponibles por ahora.
+            <br><button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+                        class="btn btn-ghost" style="margin-top:1rem">
+              Ver otros tutores
+            </button>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('scheduleSlots').innerHTML = horarios.map(h => `
+        <div class="slot-card">
+          <div class="slot-info">
+            <span class="slot-date">📅 ${formatFecha(h.fecha)}</span>
+            <span class="slot-time">🕐 ${h.hora}</span>
+          </div>
+          <button class="btn-reserve" onclick="reservar(${h.id}, this)">
+            Reservar
+          </button>
+        </div>`).join('');
+
+    } catch {
+      document.getElementById('scheduleSlots').innerHTML = '';
+      document.getElementById('msgHorarios').innerHTML =
+        '<div class="alert alert-error"><span class="alert-icon">❌</span> Error al cargar horarios.</div>';
+    }
+  }
+
+  // ── Confirmar reserva ──
+  async function reservar(disponibilidadId, btnEl) {
+    const msg = document.getElementById('msgHorarios');
+    const origText = btnEl.textContent;
+    btnEl.disabled = true;
+    btnEl.textContent = '⏳';
+    msg.innerHTML = '';
+
+    try {
+      const resp = await fetchAuth(`${API_BASE}/citas/`, {
+        method:  'POST',
+        body:    JSON.stringify({ disponibilidad_id: disponibilidadId }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        const errMsg = err.non_field_errors?.[0]
+          || err.disponibilidad_id?.[0]
+          || err.detail
+          || 'No se pudo completar la reserva.';
+        throw new Error(errMsg);
+      }
+
+      msg.innerHTML = `
+        <div class="alert alert-success" style="margin-top:1rem">
+          <span class="alert-icon">🎉</span>
+          <div>
+            <strong>¡Reserva creada!</strong> Tienes 24 horas para pagar y confirmar tu clase.<br>
+            <a href="dashboard.html" style="color:var(--primary);font-weight:700">
+              Ir a mi panel para pagar →
+            </a>
+          </div>
+        </div>`;
+
+      // Desactivar ese slot
+      btnEl.textContent = '✅ Reservado';
+      btnEl.style.background = '#10b981';
+
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error" style="margin-top:1rem">
+        <span class="alert-icon">❌</span> ${err.message}</div>`;
+      btnEl.disabled = false;
+      btnEl.textContent = origText;
+    }
+  }
+
+  // ── Helper fecha ──
+  function formatFecha(fechaStr) {
+    if (!fechaStr) return '—';
+    const [y, m, d] = fechaStr.split('-');
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
+  }
+
+  cargarServicio();
+</script>
+</body>
+</html>

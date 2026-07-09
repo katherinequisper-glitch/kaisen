@@ -294,10 +294,13 @@
       todasLasCitas = await resp.json();
 
       const hoy      = new Date().toISOString().split('T')[0];
-      const proximas = todasLasCitas.filter(c => c.estado === 'confirmada' && c.fecha >= hoy);
+      // Próximas = confirmadas futuras + pendientes futuras
+      const proximas  = todasLasCitas.filter(c =>
+        (c.estado === 'confirmada' || c.estado === 'pendiente') && c.fecha >= hoy
+      );
       const historial = todasLasCitas.filter(c => c.estado === 'confirmada' && c.fecha < hoy);
 
-      document.getElementById('statProximas').textContent  = proximas.length;
+      document.getElementById('statProximas').textContent   = proximas.length;
       document.getElementById('statRealizadas').textContent = historial.length;
       document.getElementById('badgeProximas').textContent  = proximas.length;
       document.getElementById('badgeHistorial').textContent = historial.length;
@@ -315,7 +318,10 @@
     filtroActual = tipo;
     const hoy = new Date().toISOString().split('T')[0];
 
-    const proximas  = todasLasCitas.filter(c => c.estado === 'confirmada' && c.fecha >= hoy);
+    // Próximas: confirmadas futuras + pendientes de pago
+    const proximas  = todasLasCitas.filter(c =>
+      (c.estado === 'confirmada' || c.estado === 'pendiente') && c.fecha >= hoy
+    );
     const historial = todasLasCitas.filter(c => c.estado === 'confirmada' && c.fecha < hoy);
 
     document.getElementById('tabProximas').classList.toggle('active',  tipo === 'proximas');
@@ -330,7 +336,7 @@
       cont.innerHTML = '';
       sin.style.display = 'block';
       sinMsg.textContent = tipo === 'proximas'
-        ? 'No tienes tutorías próximas confirmadas.'
+        ? 'No tienes tutorías próximas. ¡Reserva una ahora!'
         : 'Aún no has completado ninguna tutoría.';
       return;
     }
@@ -351,8 +357,38 @@
          </div>`
       : '';
 
-    const iconoTipo = tipo === 'proximas' ? '🚀' : '✅';
+    if (c.estado === 'pendiente') {
+      // Calcular tiempo restante hasta expiración
+      const expira  = new Date(c.expira_en);
+      const ahora   = new Date();
+      const horas   = Math.max(0, Math.round((expira - ahora) / 3600000));
+      const expiraMsg = horas > 0
+        ? `Expira en ${horas}h`
+        : 'Expira pronto';
 
+      return `
+        <div class="appointment-card" style="border-left:4px solid var(--accent);border-left-width:4px">
+          <div class="appointment-info">
+            <h4>${c.servicio_nombre} ${tipoBadge}</h4>
+            <p>📅 ${formatFecha(c.fecha)} &nbsp;·&nbsp; 🕐 ${c.hora}</p>
+            ${tutorHtml}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;flex-shrink:0">
+            <span class="status-badge" style="background:rgba(245,158,11,.12);color:#92400e;border:1px solid rgba(245,158,11,.3)">
+              ⏳ Pendiente de pago
+            </span>
+            <span style="font-size:.72rem;color:var(--text-muted)">⏰ ${expiraMsg}</span>
+            <button onclick="pagarCita(${c.id}, ${c.servicio_precio})"
+                    class="btn btn-accent btn-sm"
+                    style="border-radius:var(--radius-sm);padding:.45rem 1rem;font-size:.82rem">
+              💳 Pagar ahora
+            </button>
+          </div>
+        </div>`;
+    }
+
+    // Confirmada
+    const iconoTipo = tipo === 'proximas' ? '🚀' : '✅';
     return `
       <div class="appointment-card">
         <div class="appointment-info">
@@ -366,49 +402,85 @@
       </div>`;
   }
 
-  // ── Modal Premium ──
-  function mostrarModalPremium() {
-    document.getElementById('msgPremium').innerHTML = '';
-    document.getElementById('btnPagarPremium').disabled = false;
-    document.getElementById('btnPagarPremium').textContent = '🚀 Activar Premium ahora';
-    document.getElementById('modalPremium').classList.add('open');
-  }
+  // ── Pagar cita pendiente via Culqi ──
+  let citaParaPagar = null;
+  let precioCita    = 0;
 
-  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
-
-  function mostrarModalPremium() {
-    document.getElementById('msgPremium').innerHTML = '';
-    document.getElementById('modalPremium').classList.add('open');
-  }
-
-  // ── Pago Premium via Culqi → /api/payments/premium/ ──
-  function pagarPremium() {
+  function pagarCita(citaId, precio) {
+    citaParaPagar = citaId;
+    precioCita    = precio;
     Culqi.publicKey = CULQI_PUBLIC_KEY;
     Culqi.settings({
-      title:    'Kaisen Premium — S/ 49/mes',
+      title:    'Pagar tutoría',
       currency: 'PEN',
-      amount:   4900,
+      amount:   Math.round(precio * 100),
     });
     Culqi.options({
       lang: 'auto', installments: false,
       paymentMethods: { tarjeta: true, yape: false, bancaMobile: false, agente: false, billetera: false, cuotealo: false },
     });
-    cerrarModal('modalPremium');
     Culqi.open();
   }
 
-  // Culqi llama esta funcion globalmente al generar el token
+  // Culqi llama esta función global al generar el token
   async function culqi() {
     if (Culqi.token) {
       const token = Culqi.token.id;
       Culqi.close();
-      await procesarPagoPremium(token);
+
+      if (citaParaPagar) {
+        // Pago de cita normal
+        await procesarPagoCita(token, citaParaPagar);
+      } else {
+        // Pago de Premium
+        await procesarPagoPremium(token);
+      }
     } else {
-      alert('Culqi: ' + (Culqi.error?.user_message || 'Ocurrió un error con el pago.'));
+      alert('Error con Culqi: ' + (Culqi.error?.user_message || 'Intenta de nuevo.'));
     }
   }
 
+  async function procesarPagoCita(token, citaId) {
+    const msg = document.getElementById('mensajeCitas');
+    msg.innerHTML = '<div class="alert alert-info"><span class="alert-icon">⏳</span> Procesando tu pago...</div>';
+    try {
+      const resp = await fetchAuth(`${API_BASE}/payments/procesar/`, {
+        method: 'POST',
+        body: JSON.stringify({ cita_id: citaId, token_culqi: token }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Error al procesar el pago.');
+      msg.innerHTML = '<div class="alert alert-success"><span class="alert-icon">🎉</span> ¡Pago exitoso! Tu tutoría está confirmada.</div>';
+      citaParaPagar = null;
+      setTimeout(() => { msg.innerHTML = ''; cargarCitas(); }, 2000);
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> ${err.message}</div>`;
+    }
+  }
+
+
+  // ── Funciones del modal Premium ──
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function mostrarModalPremium() {
+    document.getElementById('msgPremium').innerHTML = '';
+    document.getElementById('btnPagarPremium').disabled    = false;
+    document.getElementById('btnPagarPremium').textContent = '🚀 Activar Premium ahora';
+    document.getElementById('modalPremium').classList.add('open');
+  }
+
+  function pagarPremium() {
+    citaParaPagar = null;   // no es una cita, es premium
+    Culqi.publicKey = CULQI_PUBLIC_KEY;
+    Culqi.settings({ title: 'Kaisen Premium — S/ 49/mes', currency: 'PEN', amount: 4900 });
+    Culqi.options({ lang: 'auto', installments: false,
+      paymentMethods: { tarjeta: true, yape: false, bancaMobile: false, agente: false, billetera: false, cuotealo: false } });
+    cerrarModal('modalPremium');
+    Culqi.open();
+  }
+
   async function procesarPagoPremium(token) {
+
     // Re-abrir modal para mostrar estado
     document.getElementById('modalPremium').classList.add('open');
     const msg = document.getElementById('msgPremium');

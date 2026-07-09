@@ -39,7 +39,7 @@
   <div class="auth-right">
     <div class="auth-form-box">
       <h2>Iniciar sesión</h2>
-      <p class="subtitle">¿No tienes cuenta? <a href="registro.html" style="color:var(--primary);font-weight:600">Regístrate gratis</a></p>
+      <p class="subtitle">¿No tienes cuenta? <a id="linkRegistro" href="registro.html" style="color:var(--primary);font-weight:600">Regístrate gratis</a></p>
 
       <div id="mensajeLogin"></div>
 
@@ -82,12 +82,22 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
-  // Si ya está logueado, redirigir al dashboard
-  if (estaLogueado()) window.location.href = 'dashboard.html';
+  // Leer parámetro ?next= para saber a dónde redirigir tras el login
+  const params   = new URLSearchParams(window.location.search);
+  const nextPage = params.get('next') || 'dashboard.html';
 
-  const form    = document.getElementById('formLogin');
+  // Si ya está logueado, ir directamente a nextPage
+  if (estaLogueado()) window.location.href = nextPage;
+
+  // Propagar el ?next= al link de registro
+  if (params.get('next')) {
+    document.getElementById('linkRegistro').href =
+      `registro.html?next=${encodeURIComponent(params.get('next'))}`;
+  }
+
+  const form     = document.getElementById('formLogin');
   const btnLogin = document.getElementById('btnLogin');
-  const msg     = document.getElementById('mensajeLogin');
+  const msg      = document.getElementById('mensajeLogin');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -101,7 +111,7 @@
     try {
       await login(username, password);
       msg.innerHTML = `<div class="alert alert-success"><span class="alert-icon">✅</span> ¡Bienvenido! Redirigiendo...</div>`;
-      setTimeout(() => window.location.href = 'dashboard.html', 800);
+      setTimeout(() => window.location.href = nextPage, 800);
     } catch (err) {
       msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> Usuario o contraseña incorrectos. Intenta de nuevo.</div>`;
       btnLogin.disabled = false;
