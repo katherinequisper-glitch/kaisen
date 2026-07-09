@@ -1,0 +1,40 @@
+name: kaisen
+
+services:
+  db:
+    image: mariadb:11
+    container_name: kaisen_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - kaisen_dbdata:/var/lib/mysql
+    networks:
+      - kaisen_net
+
+  backend:
+    build: ./backend
+    container_name: kaisen_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8032:8000"
+    volumes:
+      - ./backend/media:/app/media
+      - ./backend/staticfiles:/app/staticfiles
+    networks:
+      - kaisen_net
+
+volumes:
+  kaisen_dbdata:
+
+networks:
+  kaisen_net:
+    name: kaisen_net
+

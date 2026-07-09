@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Crear cuenta - Kaisen</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="form-box">
+    <h2>Crear cuenta</h2>
+    <div id="mensaje"></div>
+    <form id="formRegistro">
+        <label>Usuario</label>
+        <input type="text" id="username" required>
+        <label>Email</label>
+        <input type="email" id="email" required>
+        <label>Contraseña</label>
+        <input type="password" id="password" required>
+        <button type="submit">Crear cuenta</button>
+    </form>
+    <p style="margin-top:1rem">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('mensaje');
+        try {
+            await registrar(username, email, password);
+            msg.innerHTML = `<p class="success">Cuenta creada, ahora inicia sesión.</p>`;
+            setTimeout(() => window.location.href = 'login.html', 1500);
+        } catch (err) {
+            msg.innerHTML = `<p class="error">Error: revisa tus datos (usuario único, contraseña segura).</p>`;
+        }
+    });
+</script>
+
+</body>
+</html>

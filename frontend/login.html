@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Iniciar sesión - Kaisen</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="form-box">
+    <h2>Iniciar sesión</h2>
+    <div id="mensaje"></div>
+    <form id="formLogin">
+        <label>Usuario</label>
+        <input type="text" id="username" required>
+        <label>Contraseña</label>
+        <input type="password" id="password" required>
+        <button type="submit">Entrar</button>
+    </form>
+    <p style="margin-top:1rem">¿No tienes cuenta? <a href="registro.html">Regístrate</a></p>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('mensaje');
+        try {
+            await login(username, password);
+            window.location.href = 'dashboard.html';
+        } catch (err) {
+            msg.innerHTML = `<p class="error">${err.message}</p>`;
+        }
+    });
+</script>
+
+</body>
+</html>

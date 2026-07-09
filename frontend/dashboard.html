@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mis Citas - Kaisen</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://checkout.culqi.com/js/v4"></script>
+</head>
+<body>
+
+<header>
+    <strong>🎓 Kaisen Tutorías</strong>
+    <nav>
+        <a href="index.html">Servicios</a>
+        <a href="dashboard.html">Mis citas</a>
+        <a href="#" onclick="logout()">Cerrar sesión</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Reservar nueva tutoría</h2>
+    <div class="card">
+        <label>Servicio</label>
+        <select id="servicioSelect"></select>
+
+        <label>Horarios disponibles</label>
+        <div id="listaHorarios">Elige un servicio primero...</div>
+
+        <div id="mensajeReserva"></div>
+    </div>
+
+    <h2>Mis citas</h2>
+    <h2>⏳ Pendientes de pago</h2>
+    <div id="citasPendientes">Cargando...</div>
+
+    <h2>📅 Próximas tutorías</h2>
+    <div id="citasProximas">Cargando...</div>
+
+    <h2>✅ Tutorías realizadas</h2>
+    <div id="citasRealizadas">Cargando...</div>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+    if (!estaLogueado()) window.location.href = 'login.html';
+
+    let servicios = [];
+    let citaActualParaPago = null;
+
+    async function cargarServiciosSelect() {
+        const resp = await fetch(`${API_BASE}/servicios/`);
+        servicios = await resp.json();
+        const select = document.getElementById('servicioSelect');
+        select.innerHTML = servicios.map(s => `<option value="${s.id}">${s.nombre} - S/ ${s.precio}</option>`).join('');
+
+        const params = new URLSearchParams(window.location.search);
+        const preId = params.get('reservar');
+        if (preId) select.value = preId;
+
+        cargarHorarios();
+    }
+
+    document.getElementById('servicioSelect').addEventListener('change', cargarHorarios);
+
+    async function cargarHorarios() {
+        const servicioId = document.getElementById('servicioSelect').value;
+        const cont = document.getElementById('listaHorarios');
+        cont.innerHTML = 'Cargando horarios...';
+
+        const resp = await fetch(`${API_BASE}/disponibilidades/?servicio=${servicioId}`);
+        const horarios = await resp.json();
+
+        if (horarios.length === 0) {
+            cont.innerHTML = '<p>No hay horarios disponibles para este servicio por ahora.</p>';
+            return;
+        }
+
+        cont.innerHTML = horarios.map(h => `
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📅 ${h.fecha} — 🕐 ${h.hora}</span>
+                <button onclick="reservarHorario(${h.id})">Elegir</button>
+            </div>
+        `).join('');
+    }
+
+    async function reservarHorario(disponibilidadId) {
+        const servicioId = document.getElementById('servicioSelect').value;
+        const msg = document.getElementById('mensajeReserva');
+
+        try {
+            const resp = await fetchAuth(`${API_BASE}/citas/`, {
+                method: 'POST',
+                body: JSON.stringify({ servicio: servicioId, disponibilidad_id: disponibilidadId }),
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                throw new Error(err.non_field_errors?.[0] || 'Ese horario ya no está disponible.');
+            }
+            msg.innerHTML = `<p class="success">¡Horario reservado! Complétalo pagando en "Mis citas".</p>`;
+            cargarHorarios();
+            cargarCitas();
+        } catch (err) {
+            msg.innerHTML = `<p class="error">${err.message}</p>`;
+        }
+    }
+
+    function tarjetaCita(c, mostrarBotonPago) {
+        return `
+            <div class="card">
+                <h3>${c.servicio_nombre}</h3>
+                <p>📅 ${c.fecha} — 🕐 ${c.hora}</p>
+                <p class="estado-${c.estado}">Estado: ${c.estado === 'pendiente' ? '⏳ Pendiente de pago' : c.estado === 'confirmada' ? '✅ Confirmada' : '❌ Cancelada'}</p>
+                ${mostrarBotonPago ? `<button id="btnPagar${c.id}" onclick="pagar(${c.id})">Pagar ahora</button>` : ''}
+            </div>
+        `;
+    }
+
+    async function cargarCitas() {
+        const contPendientes = document.getElementById('citasPendientes');
+        const contProximas = document.getElementById('citasProximas');
+        const contRealizadas = document.getElementById('citasRealizadas');
+
+        const resp = await fetchAuth(`${API_BASE}/citas/`);
+        const citas = await resp.json();
+
+        const hoy = new Date().toISOString().split('T')[0];
+
+        const pendientes = citas.filter(c => c.estado === 'pendiente');
+        const proximas = citas.filter(c => c.estado === 'confirmada' && c.fecha >= hoy);
+        const realizadas = citas.filter(c => c.estado === 'confirmada' && c.fecha < hoy);
+
+        contPendientes.innerHTML = pendientes.length
+            ? pendientes.map(c => tarjetaCita(c, true)).join('')
+            : '<p>No tienes pagos pendientes.</p>';
+
+        contProximas.innerHTML = proximas.length
+            ? proximas.map(c => tarjetaCita(c, false)).join('')
+            : '<p>No tienes tutorías próximas confirmadas.</p>';
+
+        contRealizadas.innerHTML = realizadas.length
+            ? realizadas.map(c => tarjetaCita(c, false)).join('')
+            : '<p>Aún no has completado ninguna tutoría.</p>';
+    }
+
+    async function pagar(citaId) {
+        citaActualParaPago = citaId;
+
+        // Buscar el monto real de esta cita
+        const resp = await fetchAuth(`${API_BASE}/citas/`);
+        const citas = await resp.json();
+        const cita = citas.find(c => c.id === citaId);
+        const servicio = servicios.find(s => s.id === cita.servicio) || {};
+        const montoCentimos = Math.round(parseFloat(servicio.precio || 0) * 100);
+
+        Culqi.publicKey = CULQI_PUBLIC_KEY;
+        Culqi.settings({
+            title: 'Kaisen Tutorías',
+            currency: 'PEN',
+            amount: montoCentimos,
+        });
+        Culqi.options({
+            lang: 'auto',
+            installments: false,
+            paymentMethods: {
+                tarjeta: true,
+                yape: false,
+                bancaMobile: false,
+                agente: false,
+                billetera: false,
+                cuotealo: false,
+            },
+        });
+        Culqi.open();
+    }
+
+    // Culqi llama esta función global automáticamente cuando el usuario completa el formulario
+    function culqi() {
+        if (Culqi.token) {
+            const token = Culqi.token.id;
+            Culqi.close();  // cierra el modal apenas se genera el token
+            confirmarPago(citaActualParaPago, token);
+        } else {
+            console.error(Culqi.error);
+            alert('Culqi: ' + (Culqi.error?.user_message || 'Ocurrió un error con el pago.'));
+        }
+    }
+
+    async function confirmarPago(citaId, token) {
+        const msg = document.getElementById('mensajeReserva');
+        msg.innerHTML = `<p>⏳ Procesando tu pago, espera un momento...</p>`;
+        try {
+            const resp = await fetchAuth(`${API_BASE}/payments/procesar/`, {
+                method: 'POST',
+                body: JSON.stringify({ cita_id: citaId, token_culqi: token }),
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                throw new Error(err.error || 'No se pudo procesar el pago.');
+            }
+            msg.innerHTML = `<p class="success">✅ ¡Pago exitoso! Tu cita quedó confirmada.</p>`;
+            cargarCitas();
+        } catch (err) {
+            msg.innerHTML = `<p class="error">${err.message}</p>`;
+        }
+    }
+
+    cargarServiciosSelect();
+    cargarCitas();
+</script>
+
+</body>
+</html>

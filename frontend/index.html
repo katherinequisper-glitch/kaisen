@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Kaisen - Tutorías</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header>
+    <strong>🎓 Kaisen Tutorías</strong>
+    <nav>
+        <a href="index.html">Servicios</a>
+        <a href="dashboard.html" id="linkDashboard" style="display:none">Mis citas</a>
+        <a href="login.html" id="linkLogin">Iniciar sesión</a>
+        <a href="#" id="linkLogout" style="display:none">Cerrar sesión</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>Tutorías disponibles</h2>
+    <div id="listaServicios">Cargando...</div>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+    // Mostrar/ocultar links según sesión
+    if (estaLogueado()) {
+        document.getElementById('linkDashboard').style.display = 'inline';
+        document.getElementById('linkLogin').style.display = 'none';
+        document.getElementById('linkLogout').style.display = 'inline';
+    }
+    document.getElementById('linkLogout').addEventListener('click', logout);
+
+    async function cargarServicios() {
+        const cont = document.getElementById('listaServicios');
+        try {
+            const resp = await fetch(`${API_BASE}/servicios/`);
+            const servicios = await resp.json();
+            if (servicios.length === 0) {
+                cont.innerHTML = '<p>No hay tutorías disponibles por ahora.</p>';
+                return;
+            }
+            cont.innerHTML = servicios.map(s => `
+                <div class="card">
+                    <h3>${s.nombre}</h3>
+                    <p>${s.descripcion}</p>
+                    <p>Duración: ${s.duracion_minutos} min</p>
+                    <p class="servicio-precio">S/ ${s.precio}</p>
+                    <button onclick="reservar(${s.id})">Reservar</button>
+                </div>
+            `).join('');
+        } catch (e) {
+            cont.innerHTML = '<p class="error">Error al cargar servicios.</p>';
+        }
+    }
+
+    function reservar(servicioId) {
+        if (!estaLogueado()) {
+            window.location.href = 'login.html';
+            return;
+        }
+        window.location.href = `dashboard.html?reservar=${servicioId}`;
+    }
+
+    cargarServicios();
+</script>
+
+</body>
+</html>
