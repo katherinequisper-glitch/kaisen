@@ -3,9 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Kaisen Tutorías — Aprende con los mejores tutores en línea o de forma presencial. Matemáticas, ciencias, inglés y más. Clases personalizadas a tu ritmo.">
+  <meta name="description" content="Kaisen Tutorías — Aprende con los mejores tutores en línea o de forma presencial. Clases personalizadas a tu ritmo.">
   <title>Kaisen Tutorías — Aprende sin límites</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://checkout.culqi.com/js/v4"></script>
+  <style>
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(5px);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: white;
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 680px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-xl);
+      animation: fadeInUp .3s ease;
+      position: relative;
+    }
+
+    .modal-header {
+      padding: 1.5rem 2rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0;
+      background: white;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: var(--bg);
+      border: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: .9rem;
+      color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: none;
+      padding: 0;
+    }
+    .modal-close:hover { background: var(--border); transform: none; box-shadow: none; }
+
+    .modal-body { padding: 1.5rem 2rem 2rem; }
+
+    /* ── Tutor cards ── */
+    .tutor-card {
+      display: flex;
+      gap: 1.2rem;
+      padding: 1.2rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .tutor-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+    .tutor-card.selected { border-color: var(--primary); background: rgba(79,70,229,.04); }
+
+    .tutor-foto {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 3px solid var(--border);
+    }
+
+    .tutor-foto-placeholder {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700; color: white;
+      flex-shrink: 0;
+    }
+
+    .tutor-info h4 { font-size: 1rem; font-weight: 700; margin-bottom: .2rem; }
+    .tutor-info .tutor-estudios {
+      font-size: .78rem; color: var(--secondary-dark); font-weight: 600;
+      margin-bottom: .3rem;
+    }
+    .tutor-info p { font-size: .85rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .tutor-req {
+      margin-top: .4rem;
+      font-size: .78rem;
+      background: rgba(245,158,11,.1);
+      color: #92400e;
+      border: 1px solid rgba(245,158,11,.25);
+      border-radius: var(--radius-sm);
+      padding: .25rem .6rem;
+      display: inline-block;
+    }
+
+    /* Horarios en modal */
+    .horario-modal-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .7rem 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: .5rem;
+      transition: var(--transition);
+    }
+    .horario-modal-item:hover { border-color: var(--primary); }
+    .horario-modal-item span  { font-size: .9rem; color: var(--text-secondary); }
+
+    /* Steps en modal */
+    .modal-steps {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.2rem;
+      font-size: .8rem;
+      color: var(--text-muted);
+    }
+    .modal-step { display: flex; align-items: center; gap: .3rem; }
+    .modal-step.active { color: var(--primary); font-weight: 700; }
+    .modal-step-sep { color: var(--border); }
+
+    /* Auth modal */
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .auth-tab {
+      flex: 1; padding: .7rem; text-align: center;
+      font-weight: 600; font-size: .9rem;
+      cursor: pointer; color: var(--text-muted);
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: var(--transition);
+    }
+    .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  </style>
 </head>
 <body>
 
@@ -16,7 +165,7 @@
     Kaisen
   </a>
   <nav>
-    <a href="#servicios" id="linkServicios">Tutorías</a>
+    <a href="#servicios">Tutorías</a>
     <a href="#como-funciona">¿Cómo funciona?</a>
     <a href="#planes">Planes</a>
     <a href="dashboard.html" id="linkDashboard" style="display:none">Mis citas</a>
@@ -33,7 +182,8 @@
     <h1>Aprende con los<br><span>mejores tutores</span></h1>
     <p>Conectamos estudiantes con tutores expertos. Aprende a tu ritmo, desde donde quieras o de forma presencial con nuestro plan Premium.</p>
     <div class="hero-actions">
-      <a href="registro.html" class="btn btn-secondary btn-lg">🚀 Comenzar gratis</a>
+      <!-- "Comenzar gratis" ahora hace scroll a la sección de cursos -->
+      <a href="#servicios" class="btn btn-secondary btn-lg" id="btnComenzar">🚀 Ver cursos disponibles</a>
       <a href="#como-funciona" class="btn btn-outline-white btn-lg">Ver cómo funciona</a>
     </div>
   </div>
@@ -41,22 +191,10 @@
 
 <!-- ══════════ STATS ══════════ -->
 <div class="stats-bar">
-  <div class="stat-item">
-    <div class="stat-number">500+</div>
-    <div class="stat-label">Estudiantes activos</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-number">50+</div>
-    <div class="stat-label">Tutores certificados</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-number">15+</div>
-    <div class="stat-label">Materias disponibles</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-number">4.9★</div>
-    <div class="stat-label">Calificación promedio</div>
-  </div>
+  <div class="stat-item"><div class="stat-number">500+</div><div class="stat-label">Estudiantes activos</div></div>
+  <div class="stat-item"><div class="stat-number">50+</div><div class="stat-label">Tutores certificados</div></div>
+  <div class="stat-item"><div class="stat-number">15+</div><div class="stat-label">Materias disponibles</div></div>
+  <div class="stat-item"><div class="stat-number">4.9★</div><div class="stat-label">Calificación promedio</div></div>
 </div>
 
 <!-- ══════════ CÓMO FUNCIONA ══════════ -->
@@ -69,15 +207,15 @@
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-number">1</div>
-      <div class="step-icon">📝</div>
-      <h3>Crea tu cuenta</h3>
-      <p>Regístrate gratis en segundos. No necesitas tarjeta de crédito para empezar.</p>
+      <div class="step-icon">🎯</div>
+      <h3>Elige tu tutoría</h3>
+      <p>Explora el catálogo y elige el curso. Luego selecciona el tutor y el horario que más te convenga.</p>
     </div>
     <div class="step-card">
       <div class="step-number">2</div>
-      <div class="step-icon">🎯</div>
-      <h3>Elige tu tutoría</h3>
-      <p>Explora nuestro catálogo de cursos y selecciona el horario que mejor te acomode.</p>
+      <div class="step-icon">📝</div>
+      <h3>Regístrate o ingresa</h3>
+      <p>Crea tu cuenta gratis o inicia sesión. En segundos ya puedes confirmar tu reserva.</p>
     </div>
     <div class="step-card">
       <div class="step-number">3</div>
@@ -89,33 +227,17 @@
 </section>
 
 <!-- ══════════ SERVICIOS ══════════ -->
-<section style="background: white; padding: 5rem 0;">
-  <div class="section" id="servicios" style="margin: 0 auto;">
+<section style="background:white;padding:5rem 0;" id="servicios">
+  <div class="section" style="margin:0 auto;">
     <div class="section-header">
       <div class="section-tag">🎓 Catálogo</div>
       <h2 class="section-title">Tutorías <span>disponibles</span></h2>
-      <p class="section-subtitle">Todos nuestros cursos están diseñados por expertos para garantizar tu aprendizaje.</p>
+      <p class="section-subtitle">Elige un curso y conoce a los tutores disponibles para ti.</p>
     </div>
     <div id="listaServicios" class="cards-grid">
-      <!-- Skeleton cargando -->
-      <div class="card" style="padding:1.5rem">
-        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
-        <div class="loading-skeleton" style="width:60%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:90%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:40%"></div>
-      </div>
-      <div class="card" style="padding:1.5rem">
-        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
-        <div class="loading-skeleton" style="width:70%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:85%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:45%"></div>
-      </div>
-      <div class="card" style="padding:1.5rem">
-        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
-        <div class="loading-skeleton" style="width:55%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:80%;margin-bottom:.5rem"></div>
-        <div class="loading-skeleton" style="width:50%"></div>
-      </div>
+      <div class="card" style="padding:1.5rem"><div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div><div class="loading-skeleton" style="width:60%;margin-bottom:.5rem"></div><div class="loading-skeleton" style="width:90%"></div></div>
+      <div class="card" style="padding:1.5rem"><div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div><div class="loading-skeleton" style="width:70%;margin-bottom:.5rem"></div><div class="loading-skeleton" style="width:85%"></div></div>
+      <div class="card" style="padding:1.5rem"><div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div><div class="loading-skeleton" style="width:55%;margin-bottom:.5rem"></div><div class="loading-skeleton" style="width:80%"></div></div>
     </div>
     <div id="mensajeServicios"></div>
   </div>
@@ -129,7 +251,6 @@
     <p class="section-subtitle">Empieza gratis y mejora cuando quieras acceder a tutorías presenciales exclusivas.</p>
   </div>
   <div class="plans-grid">
-    <!-- Plan Gratis -->
     <div class="plan-card">
       <div class="plan-icon plan-icon-free">🌐</div>
       <div class="plan-name">Plan Gratuito</div>
@@ -137,14 +258,13 @@
       <ul class="plan-features">
         <li><span class="check">✅</span> Tutorías online ilimitadas</li>
         <li><span class="check">✅</span> Acceso a todos los horarios</li>
-        <li><span class="check">✅</span> Confirmación por pago seguro</li>
+        <li><span class="check">✅</span> Pago seguro con Culqi</li>
         <li><span class="cross">❌</span> Tutorías presenciales</li>
         <li><span class="cross">❌</span> Prioridad en reservas</li>
-        <li><span class="cross">❌</span> Material de estudio exclusivo</li>
+        <li><span class="cross">❌</span> Material exclusivo</li>
       </ul>
-      <a href="registro.html" class="btn btn-ghost" style="width:100%;justify-content:center">Comenzar gratis</a>
+      <a href="#servicios" class="btn btn-ghost" style="width:100%;justify-content:center">Ver cursos</a>
     </div>
-    <!-- Plan Premium -->
     <div class="plan-card featured">
       <div class="plan-icon plan-icon-prem">⭐</div>
       <div class="plan-name" style="color:white">Plan Premium</div>
@@ -157,7 +277,7 @@
         <li><span class="check">✅</span> Soporte prioritario 24/7</li>
         <li><span class="check">✅</span> Sesiones de evaluación gratis</li>
       </ul>
-      <a href="registro.html" class="btn btn-accent" style="width:100%;justify-content:center">¡Hazte Premium!</a>
+      <a href="#" onclick="abrirModalAuth('premium'); return false;" class="btn btn-accent" style="width:100%;justify-content:center">¡Hazte Premium!</a>
     </div>
   </div>
 </section>
@@ -172,35 +292,26 @@
   <div class="testimonials-grid" style="margin-top:2rem">
     <div class="testimonial-card">
       <div class="testimonial-stars">★★★★★</div>
-      <p class="testimonial-text">"Mejoré mis notas de cálculo en un semestre gracias a las tutorías de Kaisen. El tutor fue muy paciente y explicó todo de forma clara."</p>
+      <p class="testimonial-text">"Mejoré mis notas de cálculo en un semestre. El tutor fue muy paciente y todo quedó clarísimo."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar" style="background:linear-gradient(135deg,#4f46e5,#06b6d4)">A</div>
-        <div>
-          <div class="testimonial-name">Alessia Ramos</div>
-          <div class="testimonial-role">Estudiante de Ingeniería</div>
-        </div>
+        <div><div class="testimonial-name">Alessia Ramos</div><div class="testimonial-role">Estudiante de Ingeniería</div></div>
       </div>
     </div>
     <div class="testimonial-card">
       <div class="testimonial-stars">★★★★★</div>
-      <p class="testimonial-text">"El plan Premium vale cada sol. Tengo clases presenciales y el material exclusivo me ayudó a aprobar el examen de admisión."</p>
+      <p class="testimonial-text">"El plan Premium vale cada sol. Las clases presenciales me ayudaron a aprobar el examen de admisión."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">M</div>
-        <div>
-          <div class="testimonial-name">Marco Quispe</div>
-          <div class="testimonial-role">Preuniversitario</div>
-        </div>
+        <div><div class="testimonial-name">Marco Quispe</div><div class="testimonial-role">Preuniversitario</div></div>
       </div>
     </div>
     <div class="testimonial-card">
       <div class="testimonial-stars">★★★★★</div>
-      <p class="testimonial-text">"Superó mis expectativas. Reservar una clase toma segundos y los tutores son muy profesionales. 100% recomendado."</p>
+      <p class="testimonial-text">"Reservar una clase toma segundos y los tutores son muy profesionales. 100% recomendado."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">V</div>
-        <div>
-          <div class="testimonial-name">Valeria Torres</div>
-          <div class="testimonial-role">Estudiante de Secundaria</div>
-        </div>
+        <div><div class="testimonial-name">Valeria Torres</div><div class="testimonial-role">Estudiante de Secundaria</div></div>
       </div>
     </div>
   </div>
@@ -210,11 +321,8 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <div class="logo" style="margin-bottom:.8rem">
-        <div class="logo-icon">🎓</div>
-        Kaisen Tutorías
-      </div>
-      <p>Plataforma educativa que conecta estudiantes con los mejores tutores. Aprende online o presencialmente con nuestro plan Premium.</p>
+      <div class="logo" style="margin-bottom:.8rem"><div class="logo-icon">🎓</div>Kaisen Tutorías</div>
+      <p>Plataforma educativa que conecta estudiantes con los mejores tutores. Online o presencial con Premium.</p>
     </div>
     <div class="footer-col">
       <h4>Plataforma</h4>
@@ -241,11 +349,121 @@
   </div>
 </footer>
 
+<!-- ══════════ MODAL: TUTORES Y RESERVA ══════════ -->
+<div class="modal-overlay" id="modalTutores">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTutoresTitle">Tutores disponibles</div>
+      <button class="modal-close" onclick="cerrarModal('modalTutores')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-steps">
+        <div class="modal-step active" id="stepTutor">1. Elige tutor</div>
+        <div class="modal-step-sep">›</div>
+        <div class="modal-step" id="stepHorario">2. Elige horario</div>
+      </div>
+
+      <!-- Paso 1: lista de tutores -->
+      <div id="panelTutores">
+        <div id="listaTutores"></div>
+        <div id="msgTutores"></div>
+      </div>
+
+      <!-- Paso 2: horarios del tutor elegido -->
+      <div id="panelHorarios" style="display:none">
+        <button onclick="volverATutores()" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;border-radius:var(--radius-sm)">
+          ← Volver a tutores
+        </button>
+        <div id="infoTutorElegido" style="margin-bottom:1rem"></div>
+        <div id="listaHorariosModal"></div>
+        <div id="msgHorarios"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: LOGIN / REGISTRO INLINE ══════════ -->
+<div class="modal-overlay" id="modalAuth">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title">Accede a Kaisen</div>
+      <button class="modal-close" onclick="cerrarModal('modalAuth')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Iniciar sesión</div>
+        <div class="auth-tab"        id="tabReg"   onclick="switchAuthTab('registro')">Crear cuenta</div>
+      </div>
+
+      <div id="msgAuth"></div>
+
+      <!-- Form Login -->
+      <div id="formLoginWrap">
+        <div class="form-group">
+          <label class="form-label">Usuario</label>
+          <div class="input-icon-wrap"><span class="input-icon">👤</span>
+            <input type="text" id="authUsername" class="form-control" placeholder="Tu usuario">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-icon-wrap"><span class="input-icon">🔒</span>
+            <input type="password" id="authPassword" class="form-control" placeholder="Tu contraseña">
+          </div>
+        </div>
+        <button onclick="submitLogin()" id="btnAuthLogin" class="btn btn-primary" style="width:100%;justify-content:center;border-radius:var(--radius)">
+          Entrar
+        </button>
+      </div>
+
+      <!-- Form Registro -->
+      <div id="formRegWrap" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Usuario</label>
+          <div class="input-icon-wrap"><span class="input-icon">👤</span>
+            <input type="text" id="regUsername" class="form-control" placeholder="Nombre de usuario">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <div class="input-icon-wrap"><span class="input-icon">📧</span>
+            <input type="email" id="regEmail" class="form-control" placeholder="correo@ejemplo.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-icon-wrap"><span class="input-icon">🔒</span>
+            <input type="password" id="regPassword" class="form-control" placeholder="Mínimo 8 caracteres">
+          </div>
+        </div>
+        <button onclick="submitRegistro()" id="btnAuthReg" class="btn btn-primary" style="width:100%;justify-content:center;border-radius:var(--radius)">
+          Crear cuenta gratis
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ SCRIPTS ══════════ -->
 <script src="assets/js/config.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
-  // Mostrar/ocultar links según sesión
+  // ── Imágenes de ejemplo para tutores ──
+  const TUTOR_IMGS = [
+    'assets/images/tutor_maria.png',
+    'assets/images/tutor_carlos.png',
+    'assets/images/tutor_ana.png',
+  ];
+  const serviceImages = [
+    'assets/images/tutoring_online.png',
+    'assets/images/tutoring_presencial.png',
+  ];
+
+  let servicioSeleccionado = null;  // id del servicio al hacer click en Reservar
+  let tutorSeleccionado    = null;
+  let accionPendiente      = null;  // 'reservar' | 'premium'
+
+  // ── Estado de sesión en navbar ──
   if (estaLogueado()) {
     document.getElementById('linkDashboard').style.display = 'inline';
     document.getElementById('linkLogin').style.display = 'none';
@@ -254,30 +472,35 @@
   }
   document.getElementById('linkLogout').addEventListener('click', logout);
 
-  // Imágenes de servicio alternadas
-  const serviceImages = [
-    'assets/images/tutoring_online.png',
-    'assets/images/tutoring_presencial.png',
-  ];
+  // ── Scroll suave para anclas ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
 
+  // ── Cargar servicios ──
   async function cargarServicios() {
     const cont = document.getElementById('listaServicios');
     const msg  = document.getElementById('mensajeServicios');
     try {
-      const resp = await fetch(`${API_BASE}/servicios/`);
+      const resp     = await fetch(`${API_BASE}/servicios/`);
       const servicios = await resp.json();
-
-      if (servicios.length === 0) {
+      if (!servicios.length) {
         cont.innerHTML = '';
-        msg.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">No hay tutorías disponibles por ahora.</p>';
+        msg.innerHTML  = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">No hay tutorías disponibles por ahora.</p>';
         return;
       }
-
       cont.innerHTML = servicios.map((s, i) => {
         const img   = serviceImages[i % serviceImages.length];
         const badge = s.presencial
           ? '<span class="card-badge badge-premium">🌟 Presencial · Premium</span>'
           : '<span class="card-badge badge-online">🌐 Online</span>';
+        const nTutores = s.tutores?.length || 0;
+        const tutoresLabel = nTutores > 0
+          ? `<span style="font-size:.78rem;color:var(--text-muted)">👨‍🏫 ${nTutores} tutor${nTutores > 1 ? 'es' : ''}</span>`
+          : '';
         return `
           <div class="card animate-fade-up" style="animation-delay:${i * 0.08}s">
             <img class="card-img" src="${img}" alt="${s.nombre}" loading="lazy">
@@ -286,35 +509,255 @@
               <div class="card-title">${s.nombre}</div>
               <div class="card-desc">${s.descripcion || 'Tutoría personalizada con los mejores tutores certificados.'}</div>
               <div class="card-meta">
-                <span class="card-duration">⏱ ${s.duracion_minutos} min</span>
+                <span class="card-duration">⏱ ${s.duracion_minutos} min &nbsp;${tutoresLabel}</span>
                 <span class="card-price">S/ ${parseFloat(s.precio).toFixed(2)}</span>
               </div>
-              <button onclick="reservar(${s.id})" style="width:100%;margin-top:1rem;border-radius:var(--radius)">
-                Reservar tutoría
+              <button onclick="iniciarReserva(${s.id}, '${s.nombre}', ${s.presencial})"
+                      style="width:100%;margin-top:1rem;border-radius:var(--radius)">
+                Ver tutores y reservar
               </button>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
-    } catch (e) {
+    } catch {
       cont.innerHTML = '';
-      msg.innerHTML = '<p style="text-align:center;color:var(--danger)">⚠️ Error al cargar servicios. Verifica tu conexión.</p>';
+      msg.innerHTML  = '<p style="text-align:center;color:var(--danger)">⚠️ Error al cargar servicios.</p>';
     }
   }
 
-  function reservar(servicioId) {
+  // ── Flujo de reserva ──
+  async function iniciarReserva(servicioId, nombre, esPresencial) {
+    servicioSeleccionado = servicioId;
+    accionPendiente = 'reservar';
+
+    // Si no está logueado → abrir modal de auth
     if (!estaLogueado()) {
-      window.location.href = 'login.html';
+      abrirModalAuth('reservar');
       return;
     }
-    window.location.href = `dashboard.html?reservar=${servicioId}`;
+
+    // Si es presencial y no es premium → advertir
+    if (esPresencial) {
+      try {
+        const r = await fetchAuth(`${API_BASE}/perfil/`);
+        const p = await r.json();
+        if (!p.is_premium) {
+          abrirModalAuth('premium_needed');
+          return;
+        }
+      } catch { /* continuar */ }
+    }
+
+    // Mostrar catálogo de tutores
+    abrirModalTutores(servicioId, nombre);
   }
 
-  // Scroll suave para anclas internas
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+  async function abrirModalTutores(servicioId, nombre) {
+    document.getElementById('modalTutoresTitle').textContent = `Tutores — ${nombre}`;
+    document.getElementById('panelTutores').style.display   = 'block';
+    document.getElementById('panelHorarios').style.display  = 'none';
+    document.getElementById('stepTutor').classList.add('active');
+    document.getElementById('stepHorario').classList.remove('active');
+    document.getElementById('listaTutores').innerHTML =
+      '<div class="loading-skeleton" style="height:100px;border-radius:var(--radius-lg);margin-bottom:.8rem"></div>' +
+      '<div class="loading-skeleton" style="height:100px;border-radius:var(--radius-lg)"></div>';
+    document.getElementById('modalTutores').classList.add('open');
+
+    try {
+      const resp   = await fetch(`${API_BASE}/tutores/?servicio=${servicioId}`);
+      const tutores = await resp.json();
+      if (!tutores.length) {
+        document.getElementById('listaTutores').innerHTML =
+          '<div class="alert alert-info"><span class="alert-icon">📭</span> No hay tutores registrados para este curso aún.</div>';
+        return;
+      }
+      document.getElementById('listaTutores').innerHTML = tutores.map((t, i) => {
+        const fotoSrc = t.foto_src || TUTOR_IMGS[i % TUTOR_IMGS.length];
+        const fotoHtml = fotoSrc
+          ? `<img src="${fotoSrc}" class="tutor-foto" alt="${t.nombre}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            + `<div class="tutor-foto-placeholder" style="display:none">${t.nombre[0]}</div>`
+          : `<div class="tutor-foto-placeholder">${t.nombre[0]}</div>`;
+        const reqHtml = t.requisitos
+          ? `<span class="tutor-req">📋 Requisito: ${t.requisitos}</span>` : '';
+        return `
+          <div class="tutor-card" onclick="elegirTutor(${t.id}, '${t.nombre.replace(/'/g, "\\'")}', '${fotoSrc}')">
+            ${fotoHtml}
+            <div class="tutor-info">
+              <h4>${t.nombre}</h4>
+              <div class="tutor-estudios">🎓 ${t.estudios}</div>
+              <p>${t.descripcion}</p>
+              ${reqHtml}
+            </div>
+          </div>`;
+      }).join('');
+    } catch {
+      document.getElementById('listaTutores').innerHTML =
+        '<div class="alert alert-error"><span class="alert-icon">❌</span> Error al cargar tutores.</div>';
+    }
+  }
+
+  async function elegirTutor(tutorId, nombre, foto) {
+    tutorSeleccionado = tutorId;
+    document.getElementById('panelTutores').style.display  = 'none';
+    document.getElementById('panelHorarios').style.display = 'block';
+    document.getElementById('stepTutor').classList.remove('active');
+    document.getElementById('stepHorario').classList.add('active');
+
+    const fotoHtml = foto
+      ? `<img src="${foto}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);vertical-align:middle;margin-right:.6rem" alt="${nombre}">`
+      : `<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:700;vertical-align:middle;margin-right:.6rem">${nombre[0]}</div>`;
+
+    document.getElementById('infoTutorElegido').innerHTML = `
+      <div style="display:flex;align-items:center;padding:.8rem 1rem;background:rgba(79,70,229,.06);border-radius:var(--radius);border:1px solid rgba(79,70,229,.15)">
+        ${fotoHtml}
+        <div>
+          <div style="font-weight:700;font-size:.95rem">${nombre}</div>
+          <div style="font-size:.78rem;color:var(--text-muted)">Horarios disponibles</div>
+        </div>
+      </div>`;
+
+    document.getElementById('listaHorariosModal').innerHTML =
+      '<div class="loading-skeleton" style="height:52px;border-radius:var(--radius);margin-bottom:.5rem"></div>' +
+      '<div class="loading-skeleton" style="height:52px;border-radius:var(--radius)"></div>';
+
+    try {
+      const resp     = await fetch(`${API_BASE}/disponibilidades/?servicio=${servicioSeleccionado}&tutor=${tutorId}`);
+      const horarios = await resp.json();
+      if (!horarios.length) {
+        document.getElementById('listaHorariosModal').innerHTML =
+          '<div class="alert alert-info"><span class="alert-icon">📭</span> No hay horarios disponibles para este tutor.</div>';
+        return;
+      }
+      document.getElementById('listaHorariosModal').innerHTML = horarios.map(h => `
+        <div class="horario-modal-item">
+          <span>📅 ${formatFecha(h.fecha)} &nbsp;·&nbsp; 🕐 ${h.hora}</span>
+          <button onclick="confirmarReserva(${h.id})"
+                  class="btn btn-primary btn-sm"
+                  style="border-radius:var(--radius-sm)">
+            Reservar
+          </button>
+        </div>`).join('');
+    } catch {
+      document.getElementById('listaHorariosModal').innerHTML =
+        '<div class="alert alert-error"><span class="alert-icon">❌</span> Error al cargar horarios.</div>';
+    }
+  }
+
+  function volverATutores() {
+    document.getElementById('panelTutores').style.display  = 'block';
+    document.getElementById('panelHorarios').style.display = 'none';
+    document.getElementById('stepTutor').classList.add('active');
+    document.getElementById('stepHorario').classList.remove('active');
+  }
+
+  async function confirmarReserva(disponibilidadId) {
+    const msg = document.getElementById('msgHorarios');
+    msg.innerHTML = '<div class="alert alert-info"><span class="alert-icon">⏳</span> Reservando...</div>';
+    try {
+      const resp = await fetchAuth(`${API_BASE}/citas/`, {
+        method: 'POST',
+        body: JSON.stringify({ servicio: servicioSeleccionado, disponibilidad_id: disponibilidadId }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.non_field_errors?.[0] || err.detail || 'Error al reservar.');
+      }
+      msg.innerHTML = '<div class="alert alert-success"><span class="alert-icon">✅</span> ¡Reservado! Completa el pago en tu dashboard.</div>';
+      setTimeout(() => {
+        cerrarModal('modalTutores');
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> ${err.message}</div>`;
+    }
+  }
+
+  // ── Modal Auth inline ──
+  function abrirModalAuth(razon) {
+    document.getElementById('msgAuth').innerHTML = '';
+    if (razon === 'premium_needed') {
+      document.getElementById('msgAuth').innerHTML =
+        '<div class="alert alert-warning"><span class="alert-icon">⭐</span> Este curso es presencial y requiere el <strong>Plan Premium</strong>. Inicia sesión con tu cuenta Premium o adquiérelo desde tu dashboard.</div>';
+    } else if (razon === 'reservar') {
+      document.getElementById('msgAuth').innerHTML =
+        '<div class="alert alert-info"><span class="alert-icon">🔑</span> Inicia sesión para reservar tu tutoría.</div>';
+    } else if (razon === 'premium') {
+      document.getElementById('msgAuth').innerHTML =
+        '<div class="alert alert-info"><span class="alert-icon">⭐</span> Accede a tu cuenta para activar el Plan Premium.</div>';
+    }
+    switchAuthTab('login');
+    document.getElementById('modalAuth').classList.add('open');
+  }
+
+  function switchAuthTab(tab) {
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('tabReg').classList.toggle('active',   tab === 'registro');
+    document.getElementById('formLoginWrap').style.display = tab === 'login'    ? 'block' : 'none';
+    document.getElementById('formRegWrap').style.display   = tab === 'registro' ? 'block' : 'none';
+  }
+
+  async function submitLogin() {
+    const username = document.getElementById('authUsername').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const msg      = document.getElementById('msgAuth');
+    const btn      = document.getElementById('btnAuthLogin');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      await login(username, password);
+      msg.innerHTML = '<div class="alert alert-success"><span class="alert-icon">✅</span> Sesión iniciada. Continuando...</div>';
+      setTimeout(() => {
+        cerrarModal('modalAuth');
+        if (accionPendiente === 'reservar' && servicioSeleccionado) {
+          abrirModalTutores(servicioSeleccionado, '');
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      }, 800);
+    } catch {
+      msg.innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span> Usuario o contraseña incorrectos.</div>';
+      btn.disabled = false; btn.textContent = 'Entrar';
+    }
+  }
+
+  async function submitRegistro() {
+    const username = document.getElementById('regUsername').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const msg      = document.getElementById('msgAuth');
+    const btn      = document.getElementById('btnAuthReg');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    try {
+      await registrar(username, email, password);
+      await login(username, password);
+      msg.innerHTML = '<div class="alert alert-success"><span class="alert-icon">✅</span> ¡Cuenta creada! Continuando...</div>';
+      setTimeout(() => {
+        cerrarModal('modalAuth');
+        if (accionPendiente === 'reservar' && servicioSeleccionado) {
+          abrirModalTutores(servicioSeleccionado, '');
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      }, 800);
+    } catch {
+      msg.innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span> Error. El usuario o email ya existe.</div>';
+      btn.disabled = false; btn.textContent = 'Crear cuenta gratis';
+    }
+  }
+
+  // ── Helpers ──
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function formatFecha(fechaStr) {
+    if (!fechaStr) return '—';
+    const [y, m, d] = fechaStr.split('-');
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${d} ${meses[parseInt(m)-1]} ${y}`;
+  }
+
+  // Cerrar modales al hacer clic fuera
+  ['modalTutores','modalAuth'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal(id);
     });
   });
 

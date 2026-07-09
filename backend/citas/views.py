@@ -1,31 +1,50 @@
 import requests
-from rest_framework import viewsets, generics, permissions, status
+from django.utils import timezone
+from django.contrib.auth.models import User
+from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Servicio, Cita, Disponibilidad, Perfil
+from .models import Servicio, Cita, Disponibilidad, Perfil, Tutor
 from .serializers import (
     ServicioSerializer, CitaSerializer, DisponibilidadSerializer,
-    RegistroSerializer, PerfilSerializer,
+    RegistroSerializer, PerfilSerializer, TutorSerializer,
 )
 
 
 class ServicioViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset           = Servicio.objects.filter(activo=True)
+    queryset           = Servicio.objects.filter(activo=True).prefetch_related('tutores')
     serializer_class   = ServicioSerializer
     permission_classes = [permissions.AllowAny]
 
 
+class TutorViewSet(viewsets.ReadOnlyModelViewSet):
+    """GET /api/tutores/          — todos los tutores activos
+       GET /api/tutores/?servicio=<id> — tutores de un servicio concreto"""
+    serializer_class   = TutorSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        qs = Tutor.objects.filter(activo=True)
+        servicio_id = self.request.query_params.get('servicio')
+        if servicio_id:
+            qs = qs.filter(servicios__id=servicio_id)
+        return qs
+
+
 class DisponibilidadViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lista horarios libres, opcionalmente filtrados por ?servicio=<id>"""
+    """GET /api/disponibilidades/?servicio=<id>[&tutor=<id>]"""
     serializer_class   = DisponibilidadSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        qs = Disponibilidad.objects.filter(ocupado=False)
+        qs = Disponibilidad.objects.filter(ocupado=False).select_related('tutor')
         servicio_id = self.request.query_params.get('servicio')
+        tutor_id    = self.request.query_params.get('tutor')
         if servicio_id:
             qs = qs.filter(servicio_id=servicio_id)
+        if tutor_id:
+            qs = qs.filter(tutor_id=tutor_id)
         return qs
 
 
@@ -34,14 +53,23 @@ class MisCitasViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Cita.objects.filter(usuario=self.request.user).order_by('-fecha', '-hora')
+        ahora = timezone.now()
+        # Auto-cancelar citas pendientes expiradas antes de devolverlas
+        Cita.objects.filter(
+            usuario=self.request.user,
+            estado='pendiente',
+            expira_en__lt=ahora,
+        ).update(estado='cancelada')
+
+        return Cita.objects.filter(
+            usuario=self.request.user
+        ).exclude(estado='cancelada').order_by('-fecha', '-hora')
 
     def get_serializer_context(self):
         return {'request': self.request}
 
 
 class VerificarFeriadoView(APIView):
-    """GET /api/feriado/?fecha=YYYY-MM-DD — consulta si la fecha es feriado en Perú."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -64,24 +92,21 @@ class RegistroView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        from django.contrib.auth.models import User
         return User.objects.all()
 
 
 class PerfilView(APIView):
-    """GET /api/perfil/ — devuelve los datos del perfil del usuario autenticado."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         perfil, _ = Perfil.objects.get_or_create(usuario=request.user)
-        serializer = PerfilSerializer(perfil)
-        return Response(serializer.data)
+        return Response(PerfilSerializer(perfil).data)
 
     def patch(self, request):
-        """Permite actualizar is_premium (en producción esto lo haría el backend de pagos)."""
         perfil, _ = Perfil.objects.get_or_create(usuario=request.user)
         serializer = PerfilSerializer(perfil, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+

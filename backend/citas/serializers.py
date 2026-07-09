@@ -2,12 +2,12 @@ from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Servicio, Cita, Disponibilidad, Perfil
+from .models import Servicio, Cita, Disponibilidad, Perfil, Tutor
 
 
 class PerfilSerializer(serializers.ModelSerializer):
-    username   = serializers.CharField(source='usuario.username', read_only=True)
-    email      = serializers.EmailField(source='usuario.email',   read_only=True)
+    username = serializers.CharField(source='usuario.username', read_only=True)
+    email    = serializers.EmailField(source='usuario.email',   read_only=True)
 
     class Meta:
         model  = Perfil
@@ -15,35 +15,47 @@ class PerfilSerializer(serializers.ModelSerializer):
         read_only_fields = ['username', 'email', 'creado_en']
 
 
+class TutorSerializer(serializers.ModelSerializer):
+    foto_src = serializers.ReadOnlyField()
+
+    class Meta:
+        model  = Tutor
+        fields = ['id', 'nombre', 'foto_src', 'descripcion', 'estudios', 'requisitos']
+
+
 class ServicioSerializer(serializers.ModelSerializer):
+    tutores = TutorSerializer(many=True, read_only=True)
+
     class Meta:
         model  = Servicio
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'duracion_minutos', 'precio', 'activo', 'presencial', 'tutores']
 
 
 class DisponibilidadSerializer(serializers.ModelSerializer):
+    tutor_nombre = serializers.CharField(source='tutor.nombre', read_only=True, default=None)
+    tutor_id     = serializers.IntegerField(source='tutor.id',  read_only=True, default=None)
+
     class Meta:
         model  = Disponibilidad
-        fields = ['id', 'servicio', 'fecha', 'hora', 'ocupado']
+        fields = ['id', 'servicio', 'tutor_id', 'tutor_nombre', 'fecha', 'hora', 'ocupado']
 
 
 class CitaSerializer(serializers.ModelSerializer):
-    servicio_nombre = serializers.CharField(source='servicio.nombre',      read_only=True)
+    servicio_nombre = serializers.CharField(source='servicio.nombre',       read_only=True)
     es_presencial   = serializers.BooleanField(source='servicio.presencial', read_only=True)
+    tutor_nombre    = serializers.CharField(source='tutor.nombre',           read_only=True, default=None)
     disponibilidad_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model  = Cita
         fields = [
             'id', 'usuario', 'servicio', 'servicio_nombre', 'es_presencial',
-            'disponibilidad_id', 'fecha', 'hora', 'estado', 'creado_en',
+            'tutor_nombre', 'disponibilidad_id', 'fecha', 'hora', 'estado',
+            'creado_en', 'expira_en',
         ]
-        read_only_fields = ['usuario', 'servicio', 'fecha', 'hora', 'estado', 'creado_en']
+        read_only_fields = ['usuario', 'servicio', 'fecha', 'hora', 'estado', 'creado_en', 'expira_en']
 
     def validate(self, attrs):
-        """
-        Si el servicio es presencial, el usuario debe tener el plan Premium.
-        """
         disp_id = attrs.get('disponibilidad_id')
         try:
             disponibilidad = Disponibilidad.objects.get(id=disp_id)
@@ -51,7 +63,7 @@ class CitaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Ese horario no existe.')
 
         if disponibilidad.servicio.presencial:
-            user = self.context['request'].user
+            user   = self.context['request'].user
             perfil = getattr(user, 'perfil', None)
             if perfil is None or not perfil.is_premium:
                 raise serializers.ValidationError(
@@ -65,15 +77,16 @@ class CitaSerializer(serializers.ModelSerializer):
             try:
                 disponibilidad = Disponibilidad.objects.select_for_update().get(id=disp_id, ocupado=False)
             except Disponibilidad.DoesNotExist:
-                raise serializers.ValidationError('Ese horario ya no está disponible.')
+                raise serializers.ValidationError('Ese horario ya no esta disponible.')
 
             cita = Cita.objects.create(
-                usuario       = self.context['request'].user,
-                servicio      = disponibilidad.servicio,
+                usuario        = self.context['request'].user,
+                servicio       = disponibilidad.servicio,
                 disponibilidad = disponibilidad,
-                fecha         = disponibilidad.fecha,
-                hora          = disponibilidad.hora,
-                estado        = 'pendiente',
+                tutor          = disponibilidad.tutor,
+                fecha          = disponibilidad.fecha,
+                hora           = disponibilidad.hora,
+                estado         = 'pendiente',
             )
             disponibilidad.ocupado = True
             disponibilidad.save()
@@ -93,6 +106,5 @@ class RegistroSerializer(serializers.ModelSerializer):
             email    = validated_data.get('email', ''),
             password = validated_data['password'],
         )
-        # El signal post_save ya crea el Perfil, pero nos aseguramos
         Perfil.objects.get_or_create(usuario=user)
         return user
