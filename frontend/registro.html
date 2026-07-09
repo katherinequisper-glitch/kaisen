@@ -1,44 +1,155 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Crear cuenta - Kaisen</title>
-<link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crea tu cuenta gratuita en Kaisen Tutorías y comienza a aprender hoy.">
+  <title>Crear cuenta — Kaisen Tutorías</title>
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<div class="form-box">
-    <h2>Crear cuenta</h2>
-    <div id="mensaje"></div>
-    <form id="formRegistro">
-        <label>Usuario</label>
-        <input type="text" id="username" required>
-        <label>Email</label>
-        <input type="email" id="email" required>
-        <label>Contraseña</label>
-        <input type="password" id="password" required>
-        <button type="submit">Crear cuenta</button>
-    </form>
-    <p style="margin-top:1rem">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+<div class="auth-page">
+
+  <!-- ── Lado izquierdo: branding ── -->
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <a href="index.html" class="logo" style="justify-content:center;margin-bottom:1.5rem">
+        <div class="logo-icon">🎓</div>
+        Kaisen Tutorías
+      </a>
+
+      <img src="assets/images/tutoring_presencial.png"
+           alt="Tutoría presencial"
+           class="auth-illustration">
+
+      <h2>Únete a Kaisen</h2>
+      <p>Más de 500 estudiantes ya mejoraron sus notas con nuestras tutorías personalizadas.</p>
+
+      <ul class="auth-features">
+        <li><span>🚀</span> Registro gratis en 30 segundos</li>
+        <li><span>📚</span> Acceso inmediato a todos los cursos</li>
+        <li><span>💰</span> Sin costos ocultos</li>
+        <li><span>🌟</span> Plan Premium disponible</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Lado derecho: formulario ── -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <h2>Crear cuenta</h2>
+      <p class="subtitle">¿Ya tienes cuenta? <a href="login.html" style="color:var(--primary);font-weight:600">Inicia sesión</a></p>
+
+      <div id="mensajeRegistro"></div>
+
+      <form id="formRegistro">
+        <div class="form-group">
+          <label class="form-label" for="username">Nombre de usuario</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" class="form-control" placeholder="Ej: juan123" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Correo electrónico</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" class="form-control" placeholder="correo@ejemplo.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Contraseña</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" class="form-control" placeholder="Mínimo 8 caracteres" required autocomplete="new-password" oninput="checkPassword(this.value)">
+          </div>
+          <!-- Barra de fortaleza -->
+          <div id="strengthBar" style="margin-top:.4rem;display:none">
+            <div style="height:4px;border-radius:4px;background:var(--border);overflow:hidden">
+              <div id="strengthFill" style="height:100%;width:0;transition:width .3s,background .3s;border-radius:4px"></div>
+            </div>
+            <p id="strengthText" style="font-size:.75rem;margin-top:.3rem;color:var(--text-muted)"></p>
+          </div>
+        </div>
+
+        <button type="submit" id="btnRegistro" class="btn btn-primary" style="width:100%;justify-content:center;border-radius:var(--radius);padding:.9rem">
+          Crear cuenta gratis 🚀
+        </button>
+      </form>
+
+      <p style="text-align:center;margin-top:1.2rem;font-size:.8rem;color:var(--text-muted)">
+        Al registrarte aceptas nuestros <a href="#" style="color:var(--primary)">Términos de servicio</a>
+      </p>
+    </div>
+  </div>
+
 </div>
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
-    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const msg = document.getElementById('mensaje');
-        try {
-            await registrar(username, email, password);
-            msg.innerHTML = `<p class="success">Cuenta creada, ahora inicia sesión.</p>`;
-            setTimeout(() => window.location.href = 'login.html', 1500);
-        } catch (err) {
-            msg.innerHTML = `<p class="error">Error: revisa tus datos (usuario único, contraseña segura).</p>`;
-        }
-    });
+  if (estaLogueado()) window.location.href = 'dashboard.html';
+
+  const form       = document.getElementById('formRegistro');
+  const btnRegistro = document.getElementById('btnRegistro');
+  const msg        = document.getElementById('mensajeRegistro');
+
+  // Indicador de fortaleza de contraseña
+  function checkPassword(val) {
+    const bar  = document.getElementById('strengthBar');
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    if (!val) { bar.style.display = 'none'; return; }
+    bar.style.display = 'block';
+
+    let score = 0;
+    if (val.length >= 8)           score++;
+    if (/[A-Z]/.test(val))         score++;
+    if (/[0-9]/.test(val))         score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const levels = [
+      { pct: '25%', color: '#ef4444', label: 'Muy débil' },
+      { pct: '50%', color: '#f59e0b', label: 'Débil' },
+      { pct: '75%', color: '#06b6d4', label: 'Buena' },
+      { pct: '100%', color: '#10b981', label: '¡Contraseña fuerte!' },
+    ];
+    const l = levels[Math.max(score - 1, 0)];
+    fill.style.width      = l.pct;
+    fill.style.background = l.color;
+    text.textContent      = l.label;
+    text.style.color      = l.color;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    btnRegistro.disabled = true;
+    btnRegistro.innerHTML = '⏳ Creando cuenta...';
+    msg.innerHTML = '';
+
+    try {
+      await registrar(username, email, password);
+      msg.innerHTML = `<div class="alert alert-success"><span class="alert-icon">✅</span> ¡Cuenta creada exitosamente! Iniciando sesión...</div>`;
+      // Auto-login
+      try {
+        await login(username, password);
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      } catch {
+        setTimeout(() => window.location.href = 'login.html', 1500);
+      }
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> Error al crear la cuenta. El usuario o email ya podría estar en uso.</div>`;
+      btnRegistro.disabled = false;
+      btnRegistro.innerHTML = 'Crear cuenta gratis 🚀';
+    }
+  });
 </script>
 
 </body>

@@ -1,70 +1,324 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Kaisen - Tutorías</title>
-<link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Kaisen Tutorías — Aprende con los mejores tutores en línea o de forma presencial. Matemáticas, ciencias, inglés y más. Clases personalizadas a tu ritmo.">
+  <title>Kaisen Tutorías — Aprende sin límites</title>
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
+<!-- ══════════ NAVBAR ══════════ -->
 <header>
-    <strong>🎓 Kaisen Tutorías</strong>
-    <nav>
-        <a href="index.html">Servicios</a>
-        <a href="dashboard.html" id="linkDashboard" style="display:none">Mis citas</a>
-        <a href="login.html" id="linkLogin">Iniciar sesión</a>
-        <a href="#" id="linkLogout" style="display:none">Cerrar sesión</a>
-    </nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🎓</div>
+    Kaisen
+  </a>
+  <nav>
+    <a href="#servicios" id="linkServicios">Tutorías</a>
+    <a href="#como-funciona">¿Cómo funciona?</a>
+    <a href="#planes">Planes</a>
+    <a href="dashboard.html" id="linkDashboard" style="display:none">Mis citas</a>
+    <a href="login.html"    id="linkLogin"    class="nav-btn-outline">Iniciar sesión</a>
+    <a href="registro.html" id="linkRegister" class="nav-btn">Empezar gratis</a>
+    <a href="#" id="linkLogout" style="display:none" class="nav-btn-outline">Cerrar sesión</a>
+  </nav>
 </header>
 
-<div class="container">
-    <h2>Tutorías disponibles</h2>
-    <div id="listaServicios">Cargando...</div>
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">✨ Tutorías online y presenciales</div>
+    <h1>Aprende con los<br><span>mejores tutores</span></h1>
+    <p>Conectamos estudiantes con tutores expertos. Aprende a tu ritmo, desde donde quieras o de forma presencial con nuestro plan Premium.</p>
+    <div class="hero-actions">
+      <a href="registro.html" class="btn btn-secondary btn-lg">🚀 Comenzar gratis</a>
+      <a href="#como-funciona" class="btn btn-outline-white btn-lg">Ver cómo funciona</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ STATS ══════════ -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-number">500+</div>
+    <div class="stat-label">Estudiantes activos</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">50+</div>
+    <div class="stat-label">Tutores certificados</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">15+</div>
+    <div class="stat-label">Materias disponibles</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">4.9★</div>
+    <div class="stat-label">Calificación promedio</div>
+  </div>
 </div>
 
+<!-- ══════════ CÓMO FUNCIONA ══════════ -->
+<section class="section" id="como-funciona">
+  <div class="section-header">
+    <div class="section-tag">📋 Proceso</div>
+    <h2 class="section-title">¿Cómo funciona <span>Kaisen</span>?</h2>
+    <p class="section-subtitle">En 3 simples pasos estarás aprendiendo con los mejores tutores del país.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <div class="step-icon">📝</div>
+      <h3>Crea tu cuenta</h3>
+      <p>Regístrate gratis en segundos. No necesitas tarjeta de crédito para empezar.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <div class="step-icon">🎯</div>
+      <h3>Elige tu tutoría</h3>
+      <p>Explora nuestro catálogo de cursos y selecciona el horario que mejor te acomode.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <div class="step-icon">🌟</div>
+      <h3>¡Aprende y crece!</h3>
+      <p>Conecta con tu tutor y empieza a avanzar. Online o presencial, tú decides.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SERVICIOS ══════════ -->
+<section style="background: white; padding: 5rem 0;">
+  <div class="section" id="servicios" style="margin: 0 auto;">
+    <div class="section-header">
+      <div class="section-tag">🎓 Catálogo</div>
+      <h2 class="section-title">Tutorías <span>disponibles</span></h2>
+      <p class="section-subtitle">Todos nuestros cursos están diseñados por expertos para garantizar tu aprendizaje.</p>
+    </div>
+    <div id="listaServicios" class="cards-grid">
+      <!-- Skeleton cargando -->
+      <div class="card" style="padding:1.5rem">
+        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
+        <div class="loading-skeleton" style="width:60%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:90%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:40%"></div>
+      </div>
+      <div class="card" style="padding:1.5rem">
+        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
+        <div class="loading-skeleton" style="width:70%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:85%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:45%"></div>
+      </div>
+      <div class="card" style="padding:1.5rem">
+        <div class="loading-skeleton" style="height:180px;border-radius:var(--radius-lg);margin-bottom:1rem"></div>
+        <div class="loading-skeleton" style="width:55%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:80%;margin-bottom:.5rem"></div>
+        <div class="loading-skeleton" style="width:50%"></div>
+      </div>
+    </div>
+    <div id="mensajeServicios"></div>
+  </div>
+</section>
+
+<!-- ══════════ PLANES ══════════ -->
+<section class="plans-section" id="planes">
+  <div class="section-header">
+    <div class="section-tag">💎 Planes</div>
+    <h2 class="section-title">Elige tu <span>plan ideal</span></h2>
+    <p class="section-subtitle">Empieza gratis y mejora cuando quieras acceder a tutorías presenciales exclusivas.</p>
+  </div>
+  <div class="plans-grid">
+    <!-- Plan Gratis -->
+    <div class="plan-card">
+      <div class="plan-icon plan-icon-free">🌐</div>
+      <div class="plan-name">Plan Gratuito</div>
+      <div class="plan-price"><sup>S/</sup>0<sub>/mes</sub></div>
+      <ul class="plan-features">
+        <li><span class="check">✅</span> Tutorías online ilimitadas</li>
+        <li><span class="check">✅</span> Acceso a todos los horarios</li>
+        <li><span class="check">✅</span> Confirmación por pago seguro</li>
+        <li><span class="cross">❌</span> Tutorías presenciales</li>
+        <li><span class="cross">❌</span> Prioridad en reservas</li>
+        <li><span class="cross">❌</span> Material de estudio exclusivo</li>
+      </ul>
+      <a href="registro.html" class="btn btn-ghost" style="width:100%;justify-content:center">Comenzar gratis</a>
+    </div>
+    <!-- Plan Premium -->
+    <div class="plan-card featured">
+      <div class="plan-icon plan-icon-prem">⭐</div>
+      <div class="plan-name" style="color:white">Plan Premium</div>
+      <div class="plan-price" style="color:var(--accent-light)"><sup>S/</sup>49<sub>/mes</sub></div>
+      <ul class="plan-features">
+        <li><span class="check">✅</span> Todo lo del plan gratuito</li>
+        <li><span class="check">✅</span> Tutorías <strong>presenciales</strong></li>
+        <li><span class="check">✅</span> Prioridad en reservas</li>
+        <li><span class="check">✅</span> Material de estudio exclusivo</li>
+        <li><span class="check">✅</span> Soporte prioritario 24/7</li>
+        <li><span class="check">✅</span> Sesiones de evaluación gratis</li>
+      </ul>
+      <a href="registro.html" class="btn btn-accent" style="width:100%;justify-content:center">¡Hazte Premium!</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TESTIMONIOS ══════════ -->
+<section class="testimonials-section">
+  <div class="section-header">
+    <div class="section-tag">💬 Testimonios</div>
+    <h2 class="section-title">Lo que dicen nuestros <span>alumnos</span></h2>
+    <p class="section-subtitle">Miles de estudiantes ya mejoraron sus notas con Kaisen.</p>
+  </div>
+  <div class="testimonials-grid" style="margin-top:2rem">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Mejoré mis notas de cálculo en un semestre gracias a las tutorías de Kaisen. El tutor fue muy paciente y explicó todo de forma clara."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#4f46e5,#06b6d4)">A</div>
+        <div>
+          <div class="testimonial-name">Alessia Ramos</div>
+          <div class="testimonial-role">Estudiante de Ingeniería</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"El plan Premium vale cada sol. Tengo clases presenciales y el material exclusivo me ayudó a aprobar el examen de admisión."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">M</div>
+        <div>
+          <div class="testimonial-name">Marco Quispe</div>
+          <div class="testimonial-role">Preuniversitario</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Superó mis expectativas. Reservar una clase toma segundos y los tutores son muy profesionales. 100% recomendado."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">V</div>
+        <div>
+          <div class="testimonial-name">Valeria Torres</div>
+          <div class="testimonial-role">Estudiante de Secundaria</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo" style="margin-bottom:.8rem">
+        <div class="logo-icon">🎓</div>
+        Kaisen Tutorías
+      </div>
+      <p>Plataforma educativa que conecta estudiantes con los mejores tutores. Aprende online o presencialmente con nuestro plan Premium.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Plataforma</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="#servicios">Tutorías</a></li>
+        <li><a href="#planes">Planes</a></li>
+        <li><a href="#como-funciona">¿Cómo funciona?</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Cuenta</h4>
+      <ul>
+        <li><a href="login.html">Iniciar sesión</a></li>
+        <li><a href="registro.html">Registrarse</a></li>
+        <li><a href="dashboard.html">Mi dashboard</a></li>
+      </ul>
+    </div>
+  </div>
+  <hr class="footer-divider">
+  <div class="footer-bottom">
+    <span>© 2025 Kaisen Tutorías. Todos los derechos reservados.</span>
+    <span>🌐 kaisen.boxs.pics</span>
+  </div>
+</footer>
+
+<!-- ══════════ SCRIPTS ══════════ -->
 <script src="assets/js/config.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
-    // Mostrar/ocultar links según sesión
-    if (estaLogueado()) {
-        document.getElementById('linkDashboard').style.display = 'inline';
-        document.getElementById('linkLogin').style.display = 'none';
-        document.getElementById('linkLogout').style.display = 'inline';
-    }
-    document.getElementById('linkLogout').addEventListener('click', logout);
+  // Mostrar/ocultar links según sesión
+  if (estaLogueado()) {
+    document.getElementById('linkDashboard').style.display = 'inline';
+    document.getElementById('linkLogin').style.display = 'none';
+    document.getElementById('linkRegister').style.display = 'none';
+    document.getElementById('linkLogout').style.display = 'inline';
+  }
+  document.getElementById('linkLogout').addEventListener('click', logout);
 
-    async function cargarServicios() {
-        const cont = document.getElementById('listaServicios');
-        try {
-            const resp = await fetch(`${API_BASE}/servicios/`);
-            const servicios = await resp.json();
-            if (servicios.length === 0) {
-                cont.innerHTML = '<p>No hay tutorías disponibles por ahora.</p>';
-                return;
-            }
-            cont.innerHTML = servicios.map(s => `
-                <div class="card">
-                    <h3>${s.nombre}</h3>
-                    <p>${s.descripcion}</p>
-                    <p>Duración: ${s.duracion_minutos} min</p>
-                    <p class="servicio-precio">S/ ${s.precio}</p>
-                    <button onclick="reservar(${s.id})">Reservar</button>
-                </div>
-            `).join('');
-        } catch (e) {
-            cont.innerHTML = '<p class="error">Error al cargar servicios.</p>';
-        }
-    }
+  // Imágenes de servicio alternadas
+  const serviceImages = [
+    'assets/images/tutoring_online.png',
+    'assets/images/tutoring_presencial.png',
+  ];
 
-    function reservar(servicioId) {
-        if (!estaLogueado()) {
-            window.location.href = 'login.html';
-            return;
-        }
-        window.location.href = `dashboard.html?reservar=${servicioId}`;
-    }
+  async function cargarServicios() {
+    const cont = document.getElementById('listaServicios');
+    const msg  = document.getElementById('mensajeServicios');
+    try {
+      const resp = await fetch(`${API_BASE}/servicios/`);
+      const servicios = await resp.json();
 
-    cargarServicios();
+      if (servicios.length === 0) {
+        cont.innerHTML = '';
+        msg.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">No hay tutorías disponibles por ahora.</p>';
+        return;
+      }
+
+      cont.innerHTML = servicios.map((s, i) => {
+        const img   = serviceImages[i % serviceImages.length];
+        const badge = s.presencial
+          ? '<span class="card-badge badge-premium">🌟 Presencial · Premium</span>'
+          : '<span class="card-badge badge-online">🌐 Online</span>';
+        return `
+          <div class="card animate-fade-up" style="animation-delay:${i * 0.08}s">
+            <img class="card-img" src="${img}" alt="${s.nombre}" loading="lazy">
+            <div class="card-body">
+              ${badge}
+              <div class="card-title">${s.nombre}</div>
+              <div class="card-desc">${s.descripcion || 'Tutoría personalizada con los mejores tutores certificados.'}</div>
+              <div class="card-meta">
+                <span class="card-duration">⏱ ${s.duracion_minutos} min</span>
+                <span class="card-price">S/ ${parseFloat(s.precio).toFixed(2)}</span>
+              </div>
+              <button onclick="reservar(${s.id})" style="width:100%;margin-top:1rem;border-radius:var(--radius)">
+                Reservar tutoría
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      cont.innerHTML = '';
+      msg.innerHTML = '<p style="text-align:center;color:var(--danger)">⚠️ Error al cargar servicios. Verifica tu conexión.</p>';
+    }
+  }
+
+  function reservar(servicioId) {
+    if (!estaLogueado()) {
+      window.location.href = 'login.html';
+      return;
+    }
+    window.location.href = `dashboard.html?reservar=${servicioId}`;
+  }
+
+  // Scroll suave para anclas internas
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+
+  cargarServicios();
 </script>
 
 </body>

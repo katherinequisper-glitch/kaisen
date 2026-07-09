@@ -1,212 +1,517 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Mis Citas - Kaisen</title>
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="https://checkout.culqi.com/js/v4"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tu panel de control en Kaisen Tutorías — gestiona tus citas y reservas.">
+  <title>Mi Dashboard — Kaisen Tutorías</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://checkout.culqi.com/js/v4"></script>
 </head>
 <body>
 
+<!-- ══════════ NAVBAR ══════════ -->
 <header>
-    <strong>🎓 Kaisen Tutorías</strong>
-    <nav>
-        <a href="index.html">Servicios</a>
-        <a href="dashboard.html">Mis citas</a>
-        <a href="#" onclick="logout()">Cerrar sesión</a>
-    </nav>
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🎓</div>
+    Kaisen
+  </a>
+  <nav>
+    <a href="index.html">Tutorías</a>
+    <a href="dashboard.html" class="active">Mi panel</a>
+    <div class="nav-user-badge" id="navUserBadge" style="display:none">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span id="navUsername">Usuario</span>
+    </div>
+    <a href="#" onclick="logout()" class="nav-btn-outline">Cerrar sesión</a>
+  </nav>
 </header>
 
-<div class="container">
-    <h2>Reservar nueva tutoría</h2>
-    <div class="card">
-        <label>Servicio</label>
-        <select id="servicioSelect"></select>
+<!-- ══════════ DASHBOARD LAYOUT ══════════ -->
+<div class="dashboard-layout">
 
-        <label>Horarios disponibles</label>
-        <div id="listaHorarios">Elige un servicio primero...</div>
-
-        <div id="mensajeReserva"></div>
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-username" id="sidebarUsername">Cargando...</div>
+      <div class="sidebar-plan free" id="sidebarPlan">🌐 Plan Gratuito</div>
     </div>
 
-    <h2>Mis citas</h2>
-    <h2>⏳ Pendientes de pago</h2>
-    <div id="citasPendientes">Cargando...</div>
+    <nav class="sidebar-nav">
+      <a href="#seccion-reservar" id="navReservar" class="active">
+        <span class="nav-icon">📅</span> Reservar tutoría
+      </a>
+      <a href="#seccion-pendientes" id="navPendientes">
+        <span class="nav-icon">⏳</span> Pendientes de pago
+      </a>
+      <a href="#seccion-proximas" id="navProximas">
+        <span class="nav-icon">🚀</span> Próximas tutorías
+      </a>
+      <a href="#seccion-realizadas" id="navRealizadas">
+        <span class="nav-icon">✅</span> Historial
+      </a>
+    </nav>
 
-    <h2>📅 Próximas tutorías</h2>
-    <div id="citasProximas">Cargando...</div>
+    <div class="sidebar-upgrade" id="sidebarUpgrade" style="display:none">
+      <h4>⭐ Hazte Premium</h4>
+      <p>Accede a tutorías presenciales y beneficios exclusivos.</p>
+      <button onclick="mostrarModalPremium()" class="btn btn-accent btn-sm" style="width:100%;justify-content:center;border-radius:var(--radius-sm)">
+        Ver planes
+      </button>
+    </div>
+  </aside>
 
-    <h2>✅ Tutorías realizadas</h2>
-    <div id="citasRealizadas">Cargando...</div>
+  <!-- ─── CONTENIDO PRINCIPAL ─── -->
+  <main class="dash-main">
+
+    <!-- Bienvenida -->
+    <div class="dash-welcome">
+      <h2>¡Hola, <span id="welcomeUsername">estudiante</span>! 👋</h2>
+      <p id="welcomeSubtitle">Listo para aprender hoy. ¿Qué tutoría reservamos?</p>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="dash-stats" id="dashStats">
+      <div class="stat-card">
+        <div class="stat-card-icon blue">📅</div>
+        <div>
+          <div class="stat-card-num" id="statProximas">—</div>
+          <div class="stat-card-label">Próximas citas</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon amber">⏳</div>
+        <div>
+          <div class="stat-card-num" id="statPendientes">—</div>
+          <div class="stat-card-label">Pendientes de pago</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon green">✅</div>
+        <div>
+          <div class="stat-card-num" id="statRealizadas">—</div>
+          <div class="stat-card-label">Tutorías completadas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banner Premium para usuarios gratuitos -->
+    <div class="premium-banner" id="bannerPremium" style="display:none">
+      <div class="premium-banner-icon">⭐</div>
+      <div class="premium-banner-text">
+        <h3>¡Desbloquea las tutorías presenciales!</h3>
+        <p>Con el Plan Premium accedes a clases cara a cara, material exclusivo y soporte prioritario.</p>
+      </div>
+      <div class="premium-banner-actions">
+        <button onclick="mostrarModalPremium()" class="btn btn-accent">
+          Hazte Premium — S/ 49/mes
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── SECCIÓN: RESERVAR ─── -->
+    <div class="dash-section" id="seccion-reservar">
+      <div class="dash-section-header">
+        <div class="dash-section-title">📅 Reservar nueva tutoría</div>
+      </div>
+
+      <div class="booking-card">
+        <div id="mensajeReserva"></div>
+
+        <div class="form-group">
+          <label class="form-label">Selecciona un servicio</label>
+          <select id="servicioSelect" class="form-control">
+            <option value="">Cargando servicios...</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="grupoFeriado" style="display:none">
+          <div class="alert alert-warning" id="alertFeriado">
+            <span class="alert-icon">⚠️</span>
+            <span id="textFeriado"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Horarios disponibles</label>
+          <div id="listaHorarios" class="horarios-list">
+            <p style="color:var(--text-muted);font-size:.9rem">Elige un servicio para ver los horarios.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECCIÓN: PENDIENTES ─── -->
+    <div class="dash-section" id="seccion-pendientes">
+      <div class="dash-section-header">
+        <div class="dash-section-title">⏳ Pendientes de pago</div>
+      </div>
+      <div id="citasPendientes">
+        <div class="loading-skeleton" style="height:80px;margin-bottom:.7rem;border-radius:var(--radius-lg)"></div>
+        <div class="loading-skeleton" style="height:80px;border-radius:var(--radius-lg)"></div>
+      </div>
+    </div>
+
+    <!-- ─── SECCIÓN: PRÓXIMAS ─── -->
+    <div class="dash-section" id="seccion-proximas">
+      <div class="dash-section-header">
+        <div class="dash-section-title">🚀 Próximas tutorías</div>
+      </div>
+      <div id="citasProximas">
+        <div class="loading-skeleton" style="height:80px;border-radius:var(--radius-lg)"></div>
+      </div>
+    </div>
+
+    <!-- ─── SECCIÓN: HISTORIAL ─── -->
+    <div class="dash-section" id="seccion-realizadas">
+      <div class="dash-section-header">
+        <div class="dash-section-title">✅ Historial de tutorías</div>
+      </div>
+      <div id="citasRealizadas">
+        <div class="loading-skeleton" style="height:80px;border-radius:var(--radius-lg)"></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
+<!-- ══════════ MODAL PREMIUM ══════════ -->
+<div id="modalPremium" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:var(--radius-xl);padding:2.5rem;max-width:480px;width:90%;box-shadow:var(--shadow-xl);position:relative;animation:fadeInUp .3s ease">
+    <button onclick="cerrarModalPremium()" style="position:absolute;top:1rem;right:1rem;background:var(--bg);color:var(--text-secondary);padding:.4rem .7rem;border-radius:50px;box-shadow:none;font-size:.9rem">✕</button>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:3.5rem;margin-bottom:.5rem">⭐</div>
+      <h2 style="font-family:'Poppins',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text-primary)">Plan Premium</h2>
+      <p style="color:var(--text-secondary);font-size:.9rem">Desbloquea todas las funciones de Kaisen</p>
+    </div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:2rem">
+      <li style="display:flex;gap:.6rem;font-size:.9rem"><span style="color:var(--success)">✅</span> Tutorías <strong>presenciales</strong> ilimitadas</li>
+      <li style="display:flex;gap:.6rem;font-size:.9rem"><span style="color:var(--success)">✅</span> Prioridad en reservas de horarios</li>
+      <li style="display:flex;gap:.6rem;font-size:.9rem"><span style="color:var(--success)">✅</span> Material de estudio exclusivo</li>
+      <li style="display:flex;gap:.6rem;font-size:.9rem"><span style="color:var(--success)">✅</span> Soporte prioritario 24/7</li>
+    </ul>
+    <div style="text-align:center;margin-bottom:1rem">
+      <span style="font-family:'Poppins',sans-serif;font-size:2.5rem;font-weight:800;color:var(--accent)">S/ 49</span>
+      <span style="color:var(--text-muted);font-size:.9rem">/mes</span>
+    </div>
+    <button onclick="pagarPremium()" class="btn btn-accent" style="width:100%;justify-content:center;border-radius:var(--radius);padding:1rem;font-size:1rem">
+      🚀 Activar Premium ahora
+    </button>
+    <p style="text-align:center;margin-top:.8rem;font-size:.75rem;color:var(--text-muted)">Pago 100% seguro con Culqi · Cancela cuando quieras</p>
+  </div>
+</div>
+
+<!-- ══════════ SCRIPTS ══════════ -->
 <script src="assets/js/config.js"></script>
 <script src="assets/js/auth.js"></script>
 <script>
-    if (!estaLogueado()) window.location.href = 'login.html';
+  if (!estaLogueado()) window.location.href = 'login.html';
 
-    let servicios = [];
-    let citaActualParaPago = null;
+  let servicios = [];
+  let citaActualParaPago = null;
+  let usuarioActual = null;
+  let esPremium = false;
 
-    async function cargarServiciosSelect() {
-        const resp = await fetch(`${API_BASE}/servicios/`);
-        servicios = await resp.json();
-        const select = document.getElementById('servicioSelect');
-        select.innerHTML = servicios.map(s => `<option value="${s.id}">${s.nombre} - S/ ${s.precio}</option>`).join('');
+  // ── Cargar perfil de usuario ──
+  async function cargarPerfil() {
+    try {
+      const resp = await fetchAuth(`${API_BASE}/perfil/`);
+      if (resp.ok) {
+        usuarioActual = await resp.json();
+        esPremium = usuarioActual.is_premium || false;
+      }
+    } catch { esPremium = false; }
 
-        const params = new URLSearchParams(window.location.search);
-        const preId = params.get('reservar');
-        if (preId) select.value = preId;
+    const initial = usuarioActual?.username?.[0]?.toUpperCase() || '?';
+    const username = usuarioActual?.username || 'Estudiante';
 
-        cargarHorarios();
+    // Navbar
+    document.getElementById('navAvatar').textContent   = initial;
+    document.getElementById('navUsername').textContent = username;
+    document.getElementById('navUserBadge').style.display = 'flex';
+
+    // Sidebar
+    document.getElementById('sidebarAvatar').textContent   = initial;
+    document.getElementById('sidebarUsername').textContent = username;
+    document.getElementById('welcomeUsername').textContent  = username;
+
+    if (esPremium) {
+      document.getElementById('sidebarPlan').textContent  = '⭐ Plan Premium';
+      document.getElementById('sidebarPlan').className    = 'sidebar-plan premium';
+      document.getElementById('welcomeSubtitle').textContent = '¡Cuenta Premium activa! Disfruta tus tutorías presenciales.';
+    } else {
+      document.getElementById('sidebarUpgrade').style.display = 'block';
+      document.getElementById('bannerPremium').style.display  = 'flex';
+    }
+  }
+
+  // ── Cargar servicios ──
+  async function cargarServiciosSelect() {
+    const resp = await fetch(`${API_BASE}/servicios/`);
+    servicios = await resp.json();
+    const select = document.getElementById('servicioSelect');
+
+    select.innerHTML = servicios.map(s => {
+      const label = s.presencial
+        ? `⭐ ${s.nombre} (Presencial) — S/ ${parseFloat(s.precio).toFixed(2)}`
+        : `🌐 ${s.nombre} — S/ ${parseFloat(s.precio).toFixed(2)}`;
+      return `<option value="${s.id}" data-presencial="${s.presencial || false}">${label}</option>`;
+    }).join('');
+
+    const params = new URLSearchParams(window.location.search);
+    const preId  = params.get('reservar');
+    if (preId) select.value = preId;
+
+    cargarHorarios();
+  }
+
+  document.getElementById('servicioSelect').addEventListener('change', cargarHorarios);
+
+  // ── Cargar horarios ──
+  async function cargarHorarios() {
+    const select    = document.getElementById('servicioSelect');
+    const servicioId = select.value;
+    const cont      = document.getElementById('listaHorarios');
+    const opt       = select.options[select.selectedIndex];
+    const esPresencial = opt?.dataset?.presencial === 'true';
+
+    // Bloquear presencial si no es premium
+    if (esPresencial && !esPremium) {
+      cont.innerHTML = `
+        <div class="alert alert-warning">
+          <span class="alert-icon">🌟</span>
+          <div>
+            <strong>Tutoría presencial — Plan Premium requerido</strong><br>
+            <span style="font-size:.85rem">Activa tu plan Premium para reservar clases presenciales.</span>
+            <br><button onclick="mostrarModalPremium()" class="btn btn-accent btn-sm" style="margin-top:.6rem">Hazte Premium</button>
+          </div>
+        </div>`;
+      return;
     }
 
-    document.getElementById('servicioSelect').addEventListener('change', cargarHorarios);
+    cont.innerHTML = `<div class="loading-skeleton" style="height:56px;border-radius:var(--radius)"></div>
+                      <div class="loading-skeleton" style="height:56px;margin-top:.5rem;border-radius:var(--radius)"></div>`;
 
-    async function cargarHorarios() {
-        const servicioId = document.getElementById('servicioSelect').value;
-        const cont = document.getElementById('listaHorarios');
-        cont.innerHTML = 'Cargando horarios...';
+    // Verificar si la fecha de hoy es feriado
+    const hoy = new Date().toISOString().split('T')[0];
+    verificarFeriado(hoy);
 
-        const resp = await fetch(`${API_BASE}/disponibilidades/?servicio=${servicioId}`);
-        const horarios = await resp.json();
+    const resp     = await fetch(`${API_BASE}/disponibilidades/?servicio=${servicioId}`);
+    const horarios = await resp.json();
 
-        if (horarios.length === 0) {
-            cont.innerHTML = '<p>No hay horarios disponibles para este servicio por ahora.</p>';
-            return;
-        }
-
-        cont.innerHTML = horarios.map(h => `
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>📅 ${h.fecha} — 🕐 ${h.hora}</span>
-                <button onclick="reservarHorario(${h.id})">Elegir</button>
-            </div>
-        `).join('');
+    if (horarios.length === 0) {
+      cont.innerHTML = `<div class="alert alert-info"><span class="alert-icon">📭</span> No hay horarios disponibles para este servicio por ahora.</div>`;
+      return;
     }
 
-    async function reservarHorario(disponibilidadId) {
-        const servicioId = document.getElementById('servicioSelect').value;
-        const msg = document.getElementById('mensajeReserva');
+    cont.innerHTML = horarios.map(h => `
+      <div class="horario-item">
+        <span>📅 ${formatFecha(h.fecha)} &nbsp;·&nbsp; 🕐 ${h.hora}</span>
+        <button onclick="reservarHorario(${h.id})" class="btn btn-primary btn-sm" style="border-radius:var(--radius-sm)">
+          Elegir este horario
+        </button>
+      </div>
+    `).join('');
+  }
 
-        try {
-            const resp = await fetchAuth(`${API_BASE}/citas/`, {
-                method: 'POST',
-                body: JSON.stringify({ servicio: servicioId, disponibilidad_id: disponibilidadId }),
-            });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.non_field_errors?.[0] || 'Ese horario ya no está disponible.');
-            }
-            msg.innerHTML = `<p class="success">¡Horario reservado! Complétalo pagando en "Mis citas".</p>`;
-            cargarHorarios();
-            cargarCitas();
-        } catch (err) {
-            msg.innerHTML = `<p class="error">${err.message}</p>`;
-        }
+  async function verificarFeriado(fecha) {
+    try {
+      const resp  = await fetch(`${API_BASE}/feriado/?fecha=${fecha}`);
+      const data  = await resp.json();
+      const grupo = document.getElementById('grupoFeriado');
+      const text  = document.getElementById('textFeriado');
+      if (data.es_feriado) {
+        text.textContent    = `⚠️ Hoy (${fecha}) es feriado en Perú. Algunos horarios pueden no estar disponibles.`;
+        grupo.style.display = 'block';
+      } else {
+        grupo.style.display = 'none';
+      }
+    } catch { /* silencioso */ }
+  }
+
+  // ── Reservar horario ──
+  async function reservarHorario(disponibilidadId) {
+    const servicioId = document.getElementById('servicioSelect').value;
+    const msg        = document.getElementById('mensajeReserva');
+
+    msg.innerHTML = `<div class="alert alert-info"><span class="alert-icon">⏳</span> Reservando horario...</div>`;
+
+    try {
+      const resp = await fetchAuth(`${API_BASE}/citas/`, {
+        method: 'POST',
+        body: JSON.stringify({ servicio: servicioId, disponibilidad_id: disponibilidadId }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.non_field_errors?.[0] || 'Ese horario ya no está disponible.');
+      }
+      msg.innerHTML = `<div class="alert alert-success"><span class="alert-icon">✅</span> ¡Horario reservado! Completa el pago en la sección "Pendientes de pago".</div>`;
+      cargarHorarios();
+      cargarCitas();
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> ${err.message}</div>`;
     }
+  }
 
-    function tarjetaCita(c, mostrarBotonPago) {
-        return `
-            <div class="card">
-                <h3>${c.servicio_nombre}</h3>
-                <p>📅 ${c.fecha} — 🕐 ${c.hora}</p>
-                <p class="estado-${c.estado}">Estado: ${c.estado === 'pendiente' ? '⏳ Pendiente de pago' : c.estado === 'confirmada' ? '✅ Confirmada' : '❌ Cancelada'}</p>
-                ${mostrarBotonPago ? `<button id="btnPagar${c.id}" onclick="pagar(${c.id})">Pagar ahora</button>` : ''}
-            </div>
-        `;
+  // ── Tarjeta de cita ──
+  function tarjetaCita(c, mostrarBotonPago) {
+    const tipo = c.es_presencial
+      ? '<span class="card-badge badge-premium" style="font-size:.7rem">🌟 Presencial</span>'
+      : '<span class="card-badge badge-online"   style="font-size:.7rem">🌐 Online</span>';
+
+    let estadoBadge = '';
+    if (c.estado === 'pendiente')  estadoBadge = '<span class="status-badge status-pendiente">⏳ Pendiente de pago</span>';
+    if (c.estado === 'confirmada') estadoBadge = '<span class="status-badge status-confirmada">✅ Confirmada</span>';
+    if (c.estado === 'cancelada')  estadoBadge = '<span class="status-badge status-cancelada">❌ Cancelada</span>';
+
+    return `
+      <div class="appointment-card">
+        <div class="appointment-info">
+          <h4>${c.servicio_nombre} ${tipo}</h4>
+          <p>📅 ${formatFecha(c.fecha)} &nbsp;·&nbsp; 🕐 ${c.hora}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;flex-shrink:0">
+          ${estadoBadge}
+          ${mostrarBotonPago ? `<button onclick="pagar(${c.id})" class="btn btn-accent btn-sm" id="btnPagar${c.id}" style="border-radius:var(--radius-sm)">💳 Pagar</button>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Cargar citas ──
+  async function cargarCitas() {
+    const contPendientes = document.getElementById('citasPendientes');
+    const contProximas   = document.getElementById('citasProximas');
+    const contRealizadas = document.getElementById('citasRealizadas');
+
+    try {
+      const resp = await fetchAuth(`${API_BASE}/citas/`);
+      const citas = await resp.json();
+      const hoy   = new Date().toISOString().split('T')[0];
+
+      const pendientes = citas.filter(c => c.estado === 'pendiente');
+      const proximas   = citas.filter(c => c.estado === 'confirmada' && c.fecha >= hoy);
+      const realizadas = citas.filter(c => c.estado === 'confirmada' && c.fecha < hoy);
+
+      // Stats
+      document.getElementById('statProximas').textContent   = proximas.length;
+      document.getElementById('statPendientes').textContent = pendientes.length;
+      document.getElementById('statRealizadas').textContent = realizadas.length;
+
+      contPendientes.innerHTML = pendientes.length
+        ? pendientes.map(c => tarjetaCita(c, true)).join('')
+        : `<div class="alert alert-success"><span class="alert-icon">🎉</span> No tienes pagos pendientes.</div>`;
+
+      contProximas.innerHTML = proximas.length
+        ? proximas.map(c => tarjetaCita(c, false)).join('')
+        : `<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">No tienes tutorías próximas confirmadas.</p>`;
+
+      contRealizadas.innerHTML = realizadas.length
+        ? realizadas.map(c => tarjetaCita(c, false)).join('')
+        : `<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">Aún no has completado ninguna tutoría.</p>`;
+
+    } catch(e) {
+      contPendientes.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> Error al cargar tus citas.</div>`;
     }
+  }
 
-    async function cargarCitas() {
-        const contPendientes = document.getElementById('citasPendientes');
-        const contProximas = document.getElementById('citasProximas');
-        const contRealizadas = document.getElementById('citasRealizadas');
+  // ── Pago con Culqi ──
+  async function pagar(citaId) {
+    citaActualParaPago = citaId;
 
-        const resp = await fetchAuth(`${API_BASE}/citas/`);
-        const citas = await resp.json();
+    const resp  = await fetchAuth(`${API_BASE}/citas/`);
+    const citas = await resp.json();
+    const cita  = citas.find(c => c.id === citaId);
+    const serv  = servicios.find(s => s.id === cita?.servicio) || {};
+    const monto = Math.round(parseFloat(serv.precio || cita?.precio || 50) * 100);
 
-        const hoy = new Date().toISOString().split('T')[0];
+    Culqi.publicKey = CULQI_PUBLIC_KEY;
+    Culqi.settings({ title: 'Kaisen Tutorías', currency: 'PEN', amount: monto });
+    Culqi.options({
+      lang: 'auto',
+      installments: false,
+      paymentMethods: { tarjeta: true, yape: false, bancaMobile: false, agente: false, billetera: false, cuotealo: false },
+    });
+    Culqi.open();
+  }
 
-        const pendientes = citas.filter(c => c.estado === 'pendiente');
-        const proximas = citas.filter(c => c.estado === 'confirmada' && c.fecha >= hoy);
-        const realizadas = citas.filter(c => c.estado === 'confirmada' && c.fecha < hoy);
-
-        contPendientes.innerHTML = pendientes.length
-            ? pendientes.map(c => tarjetaCita(c, true)).join('')
-            : '<p>No tienes pagos pendientes.</p>';
-
-        contProximas.innerHTML = proximas.length
-            ? proximas.map(c => tarjetaCita(c, false)).join('')
-            : '<p>No tienes tutorías próximas confirmadas.</p>';
-
-        contRealizadas.innerHTML = realizadas.length
-            ? realizadas.map(c => tarjetaCita(c, false)).join('')
-            : '<p>Aún no has completado ninguna tutoría.</p>';
+  function culqi() {
+    if (Culqi.token) {
+      const token = Culqi.token.id;
+      Culqi.close();
+      confirmarPago(citaActualParaPago, token);
+    } else {
+      alert('Culqi: ' + (Culqi.error?.user_message || 'Ocurrió un error con el pago.'));
     }
+  }
 
-    async function pagar(citaId) {
-        citaActualParaPago = citaId;
-
-        // Buscar el monto real de esta cita
-        const resp = await fetchAuth(`${API_BASE}/citas/`);
-        const citas = await resp.json();
-        const cita = citas.find(c => c.id === citaId);
-        const servicio = servicios.find(s => s.id === cita.servicio) || {};
-        const montoCentimos = Math.round(parseFloat(servicio.precio || 0) * 100);
-
-        Culqi.publicKey = CULQI_PUBLIC_KEY;
-        Culqi.settings({
-            title: 'Kaisen Tutorías',
-            currency: 'PEN',
-            amount: montoCentimos,
-        });
-        Culqi.options({
-            lang: 'auto',
-            installments: false,
-            paymentMethods: {
-                tarjeta: true,
-                yape: false,
-                bancaMobile: false,
-                agente: false,
-                billetera: false,
-                cuotealo: false,
-            },
-        });
-        Culqi.open();
+  async function confirmarPago(citaId, token) {
+    const msg = document.getElementById('mensajeReserva');
+    msg.innerHTML = `<div class="alert alert-info"><span class="alert-icon">⏳</span> Procesando tu pago, espera un momento...</div>`;
+    try {
+      const resp = await fetchAuth(`${API_BASE}/payments/procesar/`, {
+        method: 'POST',
+        body: JSON.stringify({ cita_id: citaId, token_culqi: token }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || 'No se pudo procesar el pago.');
+      }
+      msg.innerHTML = `<div class="alert alert-success"><span class="alert-icon">🎉</span> ¡Pago exitoso! Tu cita quedó confirmada.</div>`;
+      cargarCitas();
+    } catch (err) {
+      msg.innerHTML = `<div class="alert alert-error"><span class="alert-icon">❌</span> ${err.message}</div>`;
     }
+  }
 
-    // Culqi llama esta función global automáticamente cuando el usuario completa el formulario
-    function culqi() {
-        if (Culqi.token) {
-            const token = Culqi.token.id;
-            Culqi.close();  // cierra el modal apenas se genera el token
-            confirmarPago(citaActualParaPago, token);
-        } else {
-            console.error(Culqi.error);
-            alert('Culqi: ' + (Culqi.error?.user_message || 'Ocurrió un error con el pago.'));
-        }
-    }
+  // ── Modal Premium ──
+  function mostrarModalPremium() {
+    const modal = document.getElementById('modalPremium');
+    modal.style.display = 'flex';
+  }
 
-    async function confirmarPago(citaId, token) {
-        const msg = document.getElementById('mensajeReserva');
-        msg.innerHTML = `<p>⏳ Procesando tu pago, espera un momento...</p>`;
-        try {
-            const resp = await fetchAuth(`${API_BASE}/payments/procesar/`, {
-                method: 'POST',
-                body: JSON.stringify({ cita_id: citaId, token_culqi: token }),
-            });
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.error || 'No se pudo procesar el pago.');
-            }
-            msg.innerHTML = `<p class="success">✅ ¡Pago exitoso! Tu cita quedó confirmada.</p>`;
-            cargarCitas();
-        } catch (err) {
-            msg.innerHTML = `<p class="error">${err.message}</p>`;
-        }
-    }
+  function cerrarModalPremium() {
+    document.getElementById('modalPremium').style.display = 'none';
+  }
 
-    cargarServiciosSelect();
-    cargarCitas();
+  async function pagarPremium() {
+    Culqi.publicKey = CULQI_PUBLIC_KEY;
+    Culqi.settings({ title: 'Kaisen Premium — S/ 49/mes', currency: 'PEN', amount: 4900 });
+    Culqi.options({ lang: 'auto', installments: false, paymentMethods: { tarjeta: true } });
+    cerrarModalPremium();
+    citaActualParaPago = 'premium';
+    Culqi.open();
+  }
+
+  // ── Helpers ──
+  function formatFecha(fechaStr) {
+    if (!fechaStr) return '—';
+    const [y, m, d] = fechaStr.split('-');
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${d} ${meses[parseInt(m)-1]} ${y}`;
+  }
+
+  // Cerrar modal al hacer clic fuera
+  document.getElementById('modalPremium').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalPremium();
+  });
+
+  // Scroll suave para navegación del sidebar
+  document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.sidebar-nav a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ── Inicialización ──
+  cargarPerfil();
+  cargarServiciosSelect();
+  cargarCitas();
 </script>
 
 </body>
