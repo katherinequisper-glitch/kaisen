@@ -26,8 +26,7 @@ services:
     ports:
       - "8032:8000"
     volumes:
-      - ./backend/media:/app/media
-      - ./backend/staticfiles:/app/staticfiles
+      - ./backend:/app
     networks:
       - kaisen_net
 

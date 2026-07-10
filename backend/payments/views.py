@@ -1,13 +1,37 @@
 import requests
 import os
+import secrets
 from decimal import Decimal
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from citas.models import Cita, Perfil
+from citas.models import Cita, Perfil, ServicioTutor
 from .models import Pago
 from .serializers import PagoSerializer
+from citas.serializers import CitaSerializer
+
+
+def _es_presencial(cita):
+    st = ServicioTutor.objects.filter(servicio=cita.servicio, tutor=cita.tutor).first()
+    return st.presencial if st else False
+
+
+def _generar_meet():
+    """Genera un link de Jitsi Meet único + una contraseña de acceso."""
+    room = 'kaisen-' + secrets.token_hex(4)
+    password = secrets.token_hex(3)
+    return f'https://meet.jit.si/{room}', password
+
+
+def _confirmar_cita(cita):
+    """Marca la cita como confirmada y, si es virtual, genera su enlace de Meet."""
+    cita.estado = 'confirmada'
+    if not _es_presencial(cita) and not cita.meet_link:
+        link, password = _generar_meet()
+        cita.meet_link     = link
+        cita.meet_password = password
+    cita.save()
 
 
 def _culqi_charge(email, amount_centimos, source_id, description='Kaisen Tutorías'):
@@ -75,10 +99,12 @@ class ProcesarPagoView(APIView):
                 monto            = monto_soles,
                 moneda           = 'PEN',
             )
-            cita.estado = 'confirmada'
-            cita.save()
+            _confirmar_cita(cita)
 
-        return Response(PagoSerializer(pago).data, status=201)
+        return Response({
+            **PagoSerializer(pago).data,
+            'cita': CitaSerializer(cita).data,
+        }, status=201)
 
 
 class PagarLoteView(APIView):
@@ -140,15 +166,14 @@ class PagarLoteView(APIView):
                     monto            = cita.servicio.precio,
                     moneda           = 'PEN',
                 )
-                cita.estado = 'confirmada'
-                cita.save()
+                _confirmar_cita(cita)
                 pagos_creados.append(pago)
 
         return Response({
-            'mensaje':          f'¡Pago exitoso! {len(citas)} tutoría(s) confirmada(s).',
-            'referencia_culqi': referencia,
-            'total':            str(total_soles),
-            'citas_confirmadas': [c.id for c in citas],
+            'mensaje':           f'¡Pago exitoso! {len(citas)} tutoría(s) confirmada(s).',
+            'referencia_culqi':  referencia,
+            'total':             str(total_soles),
+            'citas':             CitaSerializer(citas, many=True).data,
         }, status=200)
 
 

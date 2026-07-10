@@ -5,6 +5,7 @@ from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Count, Q, F
 from .models import Servicio, Cita, Disponibilidad, Perfil, Tutor
 from .serializers import (
     ServicioSerializer, CitaSerializer, DisponibilidadSerializer,
@@ -31,14 +32,22 @@ class TutorViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(servicios__id=servicio_id)
         return qs
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['servicio_id'] = self.request.query_params.get('servicio')
+        return context
+
 
 class DisponibilidadViewSet(viewsets.ReadOnlyModelViewSet):
-    """GET /api/disponibilidades/?servicio=<id>[&tutor=<id>]"""
+    """GET /api/disponibilidades/?servicio=<id>[&tutor=<id>] — solo con cupos libres"""
     serializer_class   = DisponibilidadSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        qs = Disponibilidad.objects.filter(ocupado=False).select_related('tutor')
+        qs = Disponibilidad.objects.select_related('tutor').annotate(
+            ocupados=Count('citas', filter=Q(citas__estado__in=['pendiente', 'confirmada']))
+        ).filter(ocupados__lt=F('cupo_maximo'))
+
         servicio_id = self.request.query_params.get('servicio')
         tutor_id    = self.request.query_params.get('tutor')
         if servicio_id:

@@ -6,6 +6,8 @@
   <meta name="description" content="Tu panel de control en Kaisen Tutorías.">
   <title>Mi Dashboard — Kaisen Tutorías</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://checkout.culqi.com/js/v4"></script>
   <style>
     /* ── Tabs de filtro ── */
@@ -139,6 +141,15 @@
       user-select: none;
     }
     .select-all-row input { accent-color: var(--primary); }
+
+    /* ── Buscador de dirección con mapa ── */
+    .sugerencias-lista {
+      position: relative; z-index: 1000;
+      background: white; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      max-height: 160px; overflow-y: auto; margin-top: -.3rem; margin-bottom: .4rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    .sugerencia-item:hover { background: var(--bg); }
   </style>
 </head>
 <body>
@@ -488,6 +499,20 @@
 
     // Confirmada
     const iconoTipo = tipo === 'proximas' ? '🚀' : '✅';
+    let extraHtml = '';
+    if (tipo === 'proximas') {
+      if (c.es_presencial) {
+        extraHtml = renderPresencialInfo(c);
+      } else if (c.meet_link) {
+        extraHtml = `
+          <div class="cita-meet" style="margin-top:.5rem">
+            <a href="${c.meet_link}" target="_blank" class="btn btn-primary btn-sm" style="border-radius:var(--radius-sm)">
+              🎥 Unirme a la clase
+            </a>
+            <span style="font-size:.75rem;color:var(--text-muted);margin-left:.5rem">Clave: <strong>${c.meet_password}</strong></span>
+          </div>`;
+      }
+    }
     return `
       <div class="appointment-card" id="cita-${c.id}">
         <div class="appointment-card-inner">
@@ -495,11 +520,50 @@
             <h4>${c.servicio_nombre} ${tipoBadge}</h4>
             <p>📅 ${formatFecha(c.fecha)} &nbsp;·&nbsp; 🕐 ${c.hora}</p>
             ${tutorHtml}
+            ${extraHtml}
           </div>
           <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0">
             <span class="status-badge status-confirmada">
               ${iconoTipo} ${tipo === 'proximas' ? 'Próxima' : 'Realizada'}
             </span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderPresencialInfo(c) {
+    const whatsappHtml = c.tutor_whatsapp
+      ? `<a href="https://wa.me/${c.tutor_whatsapp}" target="_blank" class="btn btn-primary btn-sm"
+            style="border-radius:var(--radius-sm);background:#25D366;border-color:#25D366;margin-top:.4rem;display:inline-block">
+           💬 Contactar por WhatsApp
+         </a>`
+      : '';
+
+    if (c.direccion_alumno) {
+      return `
+        <div class="cita-presencial-info" style="margin-top:.5rem">
+          <p style="font-size:.82rem;color:var(--text-secondary)">📍 Punto de encuentro: <strong>${c.direccion_alumno}</strong></p>
+          ${whatsappHtml}
+        </div>`;
+    }
+
+    return `
+      <div class="cita-presencial-info" style="margin-top:.5rem">
+        <p style="font-size:.8rem;color:#92400e;background:rgba(245,158,11,.1);padding:.4rem .6rem;border-radius:var(--radius-sm)">
+          ⚠️ Falta indicar tu punto de encuentro para la tutoría presencial
+        </p>
+        <div class="direccion-picker" id="picker-${c.id}" style="margin-top:.5rem">
+          <input type="text" id="buscar-${c.id}" placeholder="Busca tu dirección o zona (ej. Av. Larco, Miraflores)"
+                 autocomplete="off" oninput="buscarDireccion(${c.id}, this.value)"
+                 style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;margin-bottom:.4rem">
+          <div id="sugerencias-${c.id}" class="sugerencias-lista" style="display:none"></div>
+          <div id="mapa-${c.id}" style="height:220px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:.5rem"></div>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <span style="font-size:.78rem;color:var(--text-muted);flex:1" id="direccionTexto-${c.id}">
+              Busca tu dirección o mueve el pin en el mapa
+            </span>
+            <button class="btn btn-primary btn-sm" style="border-radius:var(--radius-sm)"
+                    onclick="guardarDireccion(${c.id})" id="btnGuardarDir-${c.id}" disabled>Guardar</button>
           </div>
         </div>
       </div>`;
@@ -675,7 +739,146 @@
       btn.textContent = '🚀 Intentar de nuevo';
     }
   }
+      // ══════════ BUSCADOR DE DIRECCIÓN + MAPA (Leaflet + Nominatim, gratis) ══════════
+  const mapasPresencial = {}; // citaId -> { map, marker, lat, lng, direccionTexto }
+  const debounceTimers   = {};
 
+  function buscarDireccion(citaId, texto) {
+    clearTimeout(debounceTimers[citaId]);
+    const cont = document.getElementById(`sugerencias-${citaId}`);
+
+    if (texto.trim().length < 3) {
+      cont.style.display = 'none';
+      cont.innerHTML = '';
+      return;
+    }
+
+    // Espera 500ms sin escribir antes de consultar (evita saturar la API gratuita)
+    debounceTimers[citaId] = setTimeout(async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&countrycodes=pe&q=${encodeURIComponent(texto)}`;
+        const resp = await fetch(url);
+        const resultados = await resp.json();
+
+        if (!resultados.length) {
+          cont.innerHTML = '<div class="sugerencia-item" style="padding:.5rem .7rem;font-size:.8rem;color:var(--text-muted)">Sin resultados</div>';
+          cont.style.display = 'block';
+          return;
+        }
+
+        cont.innerHTML = resultados.map(r => `
+          <div class="sugerencia-item" style="padding:.5rem .7rem;font-size:.82rem;cursor:pointer;border-bottom:1px solid var(--border)"
+              onclick='seleccionarDireccion(${citaId}, ${r.lat}, ${r.lon}, ${JSON.stringify(r.display_name)})'>
+            📍 ${r.display_name}
+          </div>
+        `).join('');
+        cont.style.display = 'block';
+      } catch {
+        cont.innerHTML = '<div class="sugerencia-item" style="padding:.5rem .7rem;font-size:.8rem;color:var(--text-muted)">Error buscando dirección</div>';
+        cont.style.display = 'block';
+      }
+    }, 500);
+  }
+
+  function seleccionarDireccion(citaId, lat, lng, nombre) {
+    lat = parseFloat(lat);
+    lng = parseFloat(lng);
+
+    document.getElementById(`sugerencias-${citaId}`).style.display = 'none';
+    document.getElementById(`buscar-${citaId}`).value = nombre;
+
+    inicializarMapa(citaId, lat, lng, nombre);
+  }
+
+  function inicializarMapa(citaId, lat, lng, nombre) {
+    const contMapa = document.getElementById(`mapa-${citaId}`);
+
+    if (!mapasPresencial[citaId]) {
+      const map = L.map(contMapa).setView([lat, lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+      marker.on('dragend', async () => {
+        const pos = marker.getLatLng();
+        mapasPresencial[citaId].lat = pos.lat;
+        mapasPresencial[citaId].lng = pos.lng;
+        await actualizarDireccionDesdeCoords(citaId, pos.lat, pos.lng);
+      });
+
+      mapasPresencial[citaId] = { map, marker, lat, lng, direccionTexto: nombre };
+    } else {
+      mapasPresencial[citaId].map.setView([lat, lng], 16);
+      mapasPresencial[citaId].marker.setLatLng([lat, lng]);
+      mapasPresencial[citaId].lat = lat;
+      mapasPresencial[citaId].lng = lng;
+      mapasPresencial[citaId].direccionTexto = nombre;
+      // Por si el mapa estaba oculto al crearse, recalcula el tamaño
+      setTimeout(() => mapasPresencial[citaId].map.invalidateSize(), 100);
+    }
+
+    document.getElementById(`direccionTexto-${citaId}`).textContent = nombre;
+    document.getElementById(`btnGuardarDir-${citaId}`).disabled = false;
+  }
+
+  // Reverse geocoding: cuando el usuario arrastra el pin, actualiza el texto de dirección
+  async function actualizarDireccionDesdeCoords(citaId, lat, lng) {
+    const span = document.getElementById(`direccionTexto-${citaId}`);
+    span.textContent = 'Actualizando dirección...';
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      const nombre = data.display_name || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+      mapasPresencial[citaId].direccionTexto = nombre;
+      span.textContent = nombre;
+    } catch {
+      span.textContent = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+    }
+  }
+
+  async function guardarDireccion(citaId) {
+    const info = mapasPresencial[citaId];
+    const btn  = document.getElementById(`btnGuardarDir-${citaId}`);
+
+    if (!info) {
+      alert('Primero busca y selecciona una dirección en el mapa.');
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Guardando...';
+
+    const direccionFinal = `${info.direccionTexto} (lat: ${info.lat.toFixed(6)}, lng: ${info.lng.toFixed(6)})`;
+
+    try {
+      const resp = await fetchAuth(`${API_BASE}/citas/${citaId}/`, {
+        method: 'PATCH',
+        body:   JSON.stringify({ direccion_alumno: direccionFinal }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.direccion_alumno?.[0] || data.error || data.non_field_errors?.[0] || 'No se pudo guardar la dirección.');
+
+      // Recarga la tarjeta de esta cita para mostrar la dirección ya guardada
+      cargarCitas();
+    } catch (err) {
+      alert('Error: ' + err.message);
+      btn.disabled    = false;
+      btn.textContent = 'Guardar';
+    }
+  }
+
+  // Cierra las sugerencias si haces clic fuera del buscador
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.sugerencias-lista').forEach(el => {
+      if (!el.previousElementSibling?.contains(e.target) && !el.contains(e.target)) {
+        el.style.display = 'none';
+      }
+    });
+  });
   // ── Helper fecha ──
   function formatFecha(fechaStr) {
     if (!fechaStr) return '—';

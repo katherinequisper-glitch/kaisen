@@ -217,6 +217,7 @@
   const serviceImages = [
     'assets/images/tutoring_online.png',
     'assets/images/tutoring_presencial.png',
+    'assets/images/chico estudiando defrente.png',
   ];
 
   // Estado de sesión en navbar
@@ -250,9 +251,7 @@
       }
       cont.innerHTML = servicios.map((s, i) => {
         const img      = serviceImages[i % serviceImages.length];
-        const badge    = s.presencial
-          ? '<span class="card-badge badge-premium">🌟 Presencial · Premium</span>'
-          : '<span class="card-badge badge-online">🌐 Online</span>';
+        const badge    = '<span class="card-badge badge-online">🌐 Ver modalidades</span>';
         const nTutores = s.tutores?.length || 0;
         const tutLabel = nTutores > 0
           ? `<span style="font-size:.78rem;color:var(--text-muted)">👨‍🏫 ${nTutores} tutor${nTutores > 1 ? 'es' : ''}</span>`
